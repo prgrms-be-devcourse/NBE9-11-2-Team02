@@ -1,0 +1,14 @@
+package com.back.together02be.stock.dto;
+
+//프론트에 보내기 위해 데이터 형태를 따로 정의
+//DB (Stock) -> 가공 -> API 응답
+public record StockListResponse(
+        Long id,
+        String stockCode,
+        String stockName,
+        String market,
+        Long currentPrice,
+        Long chargeAmount,
+        Double changeRate
+) {
+}
