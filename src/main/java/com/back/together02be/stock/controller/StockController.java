@@ -1,5 +1,7 @@
 package com.back.together02be.stock.controller;
 
+import com.back.together02be.stock.service.StockService;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -11,4 +13,11 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api/stocks")
 @Tag(name = "StockController", description = "주식 API")
 public class StockController {
+
+    private final StockService stockService;
+
+    @GetMapping
+    public List<StockListResponse> getStocks() {
+        return stockService.getStocks();
+    }
 }
