@@ -23,7 +23,6 @@ public class StockService {
                         stock.getStockName(),
                         stock.getMarket(),
                         null,
-                        null,
                         null
                 ))
                 .toList();

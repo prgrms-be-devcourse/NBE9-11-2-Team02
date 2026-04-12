@@ -8,7 +8,6 @@ public record StockListResponse(
         String stockName,
         String market,
         Long currentPrice,
-        Long chargeAmount,
         Double changeRate
 ) {
 }
