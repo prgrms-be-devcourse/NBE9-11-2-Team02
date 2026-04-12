@@ -1,7 +1,7 @@
 package com.back.together02be.asset.enitity;
 
 import com.back.together02be.global.entity.BaseEntity;
-import com.back.together02be.stock.enitity.Stock;
+import com.back.together02be.stock.entity.Stock;
 import com.back.together02be.users.enitity.Users;
 
 import jakarta.persistence.Column;
