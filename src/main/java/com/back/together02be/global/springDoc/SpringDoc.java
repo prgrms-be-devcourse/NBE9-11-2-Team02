@@ -19,4 +19,12 @@ public class SpringDoc {
                 .build();
     }
 
+    @Bean
+    public GroupedOpenApi usersApi() {
+        return GroupedOpenApi.builder()
+                .group("유저 API")
+                .pathsToMatch("/api/users/**")
+                .build();
+    }
+
 }

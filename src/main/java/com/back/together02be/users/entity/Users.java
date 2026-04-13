@@ -1,4 +1,4 @@
-package com.back.together02be.users.enitity;
+package com.back.together02be.users.entity;
 
 import com.back.together02be.global.entity.BaseEntity;
 
