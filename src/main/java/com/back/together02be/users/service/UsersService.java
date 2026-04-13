@@ -41,6 +41,10 @@ public class UsersService {
         usersRepository.save(user);
     }
 
+    public long count() {
+        return usersRepository.count();
+    }
+
     public String login(LoginReq req) {
         Users user = usersRepository.findByUsername(req.username())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 아이디입니다."));
