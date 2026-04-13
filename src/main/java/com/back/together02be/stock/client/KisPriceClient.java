@@ -24,7 +24,15 @@ public class KisPriceClient {
 
     private final RestTemplate restTemplate = new RestTemplate();
 
+    private String cachedToken;
+    private long tokenIssuedAt;
+
     public String getAccessToken() {
+
+        if (cachedToken != null && (System.currentTimeMillis() - tokenIssuedAt) < 60_000) {
+            return cachedToken;
+        }
+
         //	1.	한투 토큰 발급 URL 만들기
         String url = restBaseUrl + "/oauth2/tokenP";
 
@@ -54,6 +62,9 @@ public class KisPriceClient {
         if (tokenResponse == null || tokenResponse.access_token() == null) {
             throw new IllegalStateException("토큰 발급 실패");
         }
+
+        cachedToken = tokenResponse.access_token();
+        tokenIssuedAt = System.currentTimeMillis();
 
         //	5.	응답에서 access_token 꺼내기
         return tokenResponse.access_token();
