@@ -1,5 +1,6 @@
 package com.back.together02be.stock.client;
 
+import com.back.together02be.stock.dto.KisPriceResponse;
 import com.back.together02be.stock.dto.KisTokenResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
@@ -57,4 +58,33 @@ public class KisPriceClient {
         //	5.	응답에서 access_token 꺼내기
         return tokenResponse.access_token();
     }
-}
+
+    public KisPriceResponse getCurrentPrice(String token, String stockCode) {
+        //한투 현재가 조회 주소
+        String url = restBaseUrl + "/uapi/domestic-stock/v1/quotations/inquire-price"
+                + "?fid_cond_mrkt_div_code=J"
+                + "&fid_input_iscd=" + stockCode;
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(token);
+        headers.set("appkey", appKey);
+        headers.set("appsecret", appSecret);
+        headers.set("tr_id", "FHKST01010100");
+
+        HttpEntity<Void> request = new HttpEntity<>(headers);
+
+        ResponseEntity<KisPriceResponse> response = restTemplate.exchange(
+                url,
+                HttpMethod.GET,
+                request,
+                KisPriceResponse.class
+        );
+
+        KisPriceResponse body = response.getBody();
+
+        if (body == null || body.output() == null) {
+            throw new IllegalStateException("현재가 조회 실패: stockCode=" + stockCode);
+        }
+
+        return body;
+    }}
