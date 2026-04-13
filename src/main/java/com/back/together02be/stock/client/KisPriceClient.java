@@ -1,7 +1,7 @@
 package com.back.together02be.stock.client;
 
-import com.back.together02be.stock.dto.KisPriceResponse;
-import com.back.together02be.stock.dto.KisTokenResponse;
+import com.back.together02be.stock.dto.KisPriceRes;
+import com.back.together02be.stock.dto.KisTokenRes;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
@@ -27,7 +27,7 @@ public class KisPriceClient {
     private String cachedToken;
     private long tokenIssuedAt;
 
-    public String getAccessToken() {
+    public synchronized String getAccessToken() {
 
         if (cachedToken != null && (System.currentTimeMillis() - tokenIssuedAt) < 60_000) {
             return cachedToken;
@@ -49,15 +49,15 @@ public class KisPriceClient {
         //	3.	요청 body 설정
         HttpEntity<Map<String, String>> request = new HttpEntity<>(body, headers);
 
-        ResponseEntity<KisTokenResponse> response = restTemplate.exchange(
+        ResponseEntity<KisTokenRes> response = restTemplate.exchange(
                 url,
                 HttpMethod.POST,
                 request,
-                KisTokenResponse.class
+                KisTokenRes.class
         );
 
         //	4.	POST 요청 보내기
-        KisTokenResponse tokenResponse = response.getBody();
+        KisTokenRes tokenResponse = response.getBody();
 
         if (tokenResponse == null || tokenResponse.access_token() == null) {
             throw new IllegalStateException("토큰 발급 실패");
@@ -70,7 +70,7 @@ public class KisPriceClient {
         return tokenResponse.access_token();
     }
 
-    public KisPriceResponse getCurrentPrice(String token, String stockCode) {
+    public KisPriceRes getCurrentPrice(String token, String stockCode) {
         //한투 현재가 조회 주소
         String url = restBaseUrl + "/uapi/domestic-stock/v1/quotations/inquire-price"
                 + "?fid_cond_mrkt_div_code=J"
@@ -84,14 +84,14 @@ public class KisPriceClient {
 
         HttpEntity<Void> request = new HttpEntity<>(headers);
 
-        ResponseEntity<KisPriceResponse> response = restTemplate.exchange(
+        ResponseEntity<KisPriceRes> response = restTemplate.exchange(
                 url,
                 HttpMethod.GET,
                 request,
-                KisPriceResponse.class
+                KisPriceRes.class
         );
 
-        KisPriceResponse body = response.getBody();
+        KisPriceRes body = response.getBody();
 
         if (body == null || body.output() == null) {
             throw new IllegalStateException("현재가 조회 실패: stockCode=" + stockCode);

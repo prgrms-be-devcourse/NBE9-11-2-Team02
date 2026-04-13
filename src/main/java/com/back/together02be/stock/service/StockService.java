@@ -1,8 +1,9 @@
 package com.back.together02be.stock.service;
 
+import com.back.together02be.stock.cache.StockPriceCache;
 import com.back.together02be.stock.client.KisPriceClient;
-import com.back.together02be.stock.dto.KisPriceResponse;
-import com.back.together02be.stock.dto.StockListResponse;
+import com.back.together02be.stock.dto.KisPriceRes;
+import com.back.together02be.stock.dto.StockListRes;
 import com.back.together02be.stock.entity.Stock;
 import com.back.together02be.stock.repository.StockRepository;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -24,39 +25,23 @@ public class StockService {
 
     private final Map<String, StockPriceCache> priceCache = new ConcurrentHashMap<>();
 
-    private record StockPriceCache(
-            Long currentPrice,
-            Double changeRate
-    ) {
-    }
+    private int currentIndex = 0;
 
-    public List<StockListResponse> getStocks() {
-        String token = kisPriceClient.getAccessToken();
-        List<StockListResponse> result = new ArrayList<>();
+    public List<StockListRes> getStocks() {
+        List<StockListRes> result = new ArrayList<>();
 
         for (Stock stock : stockRepository.findByIsActiveTrue()) {
-
             StockPriceCache cached = priceCache.get(stock.getStockCode());
 
-            Long currentPrice;
-            Double changeRate;
+            Long currentPrice = null;
+            Double changeRate = null;
 
             if (cached != null) {
-                // 캐시 사용
                 currentPrice = cached.currentPrice();
                 changeRate = cached.changeRate();
-            } else {
-                // 없으면 API 호출
-                KisPriceResponse price = kisPriceClient.getCurrentPrice(token, stock.getStockCode());
-
-                currentPrice = Long.parseLong(price.output().stck_prpr());
-                changeRate = Double.parseDouble(price.output().prdy_ctrt());
-
-                // 캐시에 저장
-                priceCache.put(stock.getStockCode(), new StockPriceCache(currentPrice, changeRate));
             }
 
-            result.add(new StockListResponse(
+            result.add(new StockListRes(
                     stock.getId(),
                     stock.getStockCode(),
                     stock.getStockName(),
@@ -69,24 +54,36 @@ public class StockService {
         return result;
     }
 
-    //5초마다 갱신
-    @Scheduled(fixedRate = 5000)
+    @Scheduled(fixedRate = 1000) // 1초마다
     public void updatePriceCache() {
+
+        List<Stock> stocks = stockRepository.findByIsActiveTrue();
+
+        if (stocks.isEmpty()) return;
+
         String token = kisPriceClient.getAccessToken();
 
-        for (Stock stock : stockRepository.findByIsActiveTrue()) {
+        int batchSize = 1; // 한 번에 1개
+
+        for (int i = 0; i < batchSize; i++) {
+
+            int index = (currentIndex + i) % stocks.size();
+            Stock stock = stocks.get(index);
 
             try {
-                KisPriceResponse price = kisPriceClient.getCurrentPrice(token, stock.getStockCode());
+                KisPriceRes price = kisPriceClient.getCurrentPrice(token, stock.getStockCode());
 
                 Long currentPrice = Long.parseLong(price.output().stck_prpr());
                 Double changeRate = Double.parseDouble(price.output().prdy_ctrt());
 
-                priceCache.put(stock.getStockCode(), new StockPriceCache(currentPrice, changeRate));
+                priceCache.put(stock.getStockCode(),
+                        new StockPriceCache(currentPrice, changeRate));
 
             } catch (Exception e) {
-                System.out.println("가격 갱신 실패: " + stock.getStockCode());
-            }
+                System.out.println("가격 갱신 실패: " + stock.getStockCode() + " / " + e.getMessage());            }
         }
+
+        // 다음 위치로 이동
+        currentIndex = (currentIndex + batchSize) % stocks.size();
     }
 }

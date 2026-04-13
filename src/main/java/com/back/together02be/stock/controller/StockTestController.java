@@ -1,7 +1,7 @@
 package com.back.together02be.stock.controller;
 
 import com.back.together02be.stock.client.KisPriceClient;
-import com.back.together02be.stock.dto.KisPriceResponse;
+import com.back.together02be.stock.dto.KisPriceRes;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -18,7 +18,7 @@ public class StockTestController {
     }
 
     @GetMapping("/api/test/price")
-    public KisPriceResponse testPrice() {
+    public KisPriceRes testPrice() {
         String token = kisPriceClient.getAccessToken();
         return kisPriceClient.getCurrentPrice(token, "005930");
     }

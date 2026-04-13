@@ -1,6 +1,6 @@
 package com.back.together02be.stock.controller;
 
-import com.back.together02be.stock.dto.StockListResponse;
+import com.back.together02be.stock.dto.StockListRes;
 import com.back.together02be.stock.service.StockService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -20,7 +20,7 @@ public class StockController {
     private final StockService stockService;
 
     @GetMapping
-    public List<StockListResponse> getStocks() {
+    public List<StockListRes> getStocks() {
         return stockService.getStocks();
     }
 }
