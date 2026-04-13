@@ -35,6 +35,7 @@ dependencies {
     testCompileOnly("org.projectlombok:lombok")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     testAnnotationProcessor("org.projectlombok:lombok")
+    implementation("org.java-websocket:Java-WebSocket:1.6.0")
 }
 
 tasks.withType<Test> {
