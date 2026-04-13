@@ -1,11 +1,9 @@
 package com.back.together02be.users.controller;
 
 import com.back.together02be.global.apiRes.ApiRes;
-import com.back.together02be.users.dto.request.UsersRequestDto;
-import com.back.together02be.users.dto.response.UsersResponseDto;
+import com.back.together02be.users.dto.request.UsersReq;
 import com.back.together02be.users.service.UsersService;
 import io.swagger.v3.oas.annotations.Operation;
-import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -25,7 +23,7 @@ public class UsersController {
 
     @PostMapping("/signup")
     @Operation(summary = "회원 가입")
-    public ResponseEntity<ApiRes<Void>> signup(@RequestBody UsersRequestDto req) {
+    public ResponseEntity<ApiRes<Void>> signup(@RequestBody UsersReq req) {
         usersService.signup(req);
         return ResponseEntity.ok(new ApiRes<>("회원가입 성공", null));
     }

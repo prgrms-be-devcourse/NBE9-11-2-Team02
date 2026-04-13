@@ -1,11 +1,12 @@
 package com.back.together02be.users.service;
 
-import com.back.together02be.users.dto.request.UsersRequestDto;
+import com.back.together02be.users.dto.request.UsersReq;
 import com.back.together02be.users.entity.Users;
 import com.back.together02be.users.repository.UsersRepository;
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -13,7 +14,8 @@ public class UsersService {
 
     private final UsersRepository usersRepository;
 
-    public void signup(UsersRequestDto req) {
+    @Transactional
+    public void signup(UsersReq req) {
 
         if (usersRepository.findByUsername(req.username()).isPresent()) {
             throw new IllegalArgumentException("이미 사용중인 아이디입니다.");

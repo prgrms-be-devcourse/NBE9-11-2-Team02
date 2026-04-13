@@ -1,5 +1,5 @@
 package com.back.together02be.users.dto.response;
 
-public record UsersResponseDto(
+public record UsersRes(
         String accessToken
 ) {}
