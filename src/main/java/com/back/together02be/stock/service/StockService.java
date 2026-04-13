@@ -63,7 +63,8 @@ public class StockService {
 
         String token = kisPriceClient.getAccessToken();
 
-        int batchSize = 1; // 한 번에 1개
+        // 한투 OpenAPI 호출 제한 때문에 전체 종목을 한 번에 갱신하지 않고 순차 갱신
+        int batchSize = 1;
 
         for (int i = 0; i < batchSize; i++) {
 
