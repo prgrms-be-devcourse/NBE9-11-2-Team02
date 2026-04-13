@@ -18,14 +18,14 @@ public class KisPriceClient {
     @Value("${kis.app-secret}")
     private String appSecret;
 
-    @Value("${kis.base-url}")
-    private String baseUrl;
+    @Value("${kis.rest-base-url}")
+    private String restBaseUrl;
 
     private final RestTemplate restTemplate = new RestTemplate();
 
     public String getAccessToken() {
         //	1.	한투 토큰 발급 URL 만들기
-        String url = baseUrl + "/oauth2/tokenP";
+        String url = restBaseUrl + "/oauth2/tokenP";
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);

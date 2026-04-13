@@ -41,4 +41,4 @@ out/
 *.trace.db
 
 # api key
-appplication-local.yml
+application-local.yml
