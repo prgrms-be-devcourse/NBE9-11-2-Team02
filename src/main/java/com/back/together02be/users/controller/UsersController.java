@@ -33,7 +33,7 @@ public class UsersController {
     @PostMapping("/login")
     @Operation(summary = "로그인")
     public ResponseEntity<ApiRes<UsersRes>> login(@RequestBody LoginReq req) {
-        String accessToken = usersService.login(req);
-        return ResponseEntity.ok(new ApiRes<>("로그인 성공", new UsersRes(accessToken)));
+        String[] tokens = usersService.login(req);
+        return ResponseEntity.ok(new ApiRes<>("로그인 성공", new UsersRes(tokens[0], tokens[1])));
     }
 }

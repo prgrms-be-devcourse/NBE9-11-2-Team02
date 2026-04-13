@@ -22,8 +22,11 @@ public class UsersService {
     @Value("${jwt.secret}")
     private String jwtSecret;
 
-    @Value("${jwt.expire-seconds}")
-    private long jwtExpireSeconds;
+    @Value("${jwt.access-expire-seconds}")
+    private long accessExpireSeconds;
+
+    @Value("${jwt.refresh-expire-seconds}")
+    private long refreshExpireSeconds;
 
     @Transactional
     public void signup(UsersReq req) {
@@ -45,7 +48,7 @@ public class UsersService {
         return usersRepository.count();
     }
 
-    public String login(LoginReq req) {
+    public String[] login(LoginReq req) {
         Users user = usersRepository.findByUsername(req.username())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 아이디입니다."));
 
@@ -53,6 +56,17 @@ public class UsersService {
             throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
         }
 
-        return JwtUtil.generateAccessToken(jwtSecret, jwtExpireSeconds, Map.of("username", user.getUsername()));
+        String accessToken = JwtUtil.generateAccessToken(
+                jwtSecret,
+                accessExpireSeconds,
+                Map.of("username", user.getUsername())
+        );
+        String refreshToken = JwtUtil.generateAccessToken(
+                jwtSecret,
+                refreshExpireSeconds,
+                Map.of("username", user.getUsername())
+        );
+
+        return new String[]{accessToken, refreshToken};
     }
 }

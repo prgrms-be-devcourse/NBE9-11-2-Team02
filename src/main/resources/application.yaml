@@ -24,7 +24,8 @@ spring:
 
 jwt:
   secret: "your-secret-key-change-this-in-production-must-be-long-enough"
-  expire-seconds: 3600
+  access-expire-seconds: 3600
+  refresh-expire-seconds: 1209600
 
 springdoc:
   default-produces-media-type: application/json; charset=UTF-8
