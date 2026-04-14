@@ -36,9 +36,15 @@ out/
 ### VS Code ###
 .vscode/
 
+### macOS ###
+.DS_Store
+
 # H2 Database
 *.mv.db
 *.trace.db
 
 # api key
 application-local.yml
+
+# Secret
+application-secret.yaml
