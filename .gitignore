@@ -42,3 +42,6 @@ out/
 # H2 Database
 *.mv.db
 *.trace.db
+
+# Secret
+application-secret.yaml
