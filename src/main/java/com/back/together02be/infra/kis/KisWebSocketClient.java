@@ -58,4 +58,8 @@ public class KisWebSocketClient {
 	public void subscribe(String stockCode) {
 		handler.subscribe(client, stockCode);
 	}
+
+	public void unsubscribe(String stockCode) {
+		handler.unsubscribe(client, stockCode);
+	}
 }
