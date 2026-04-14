@@ -11,7 +11,9 @@ import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.Map;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -48,6 +50,7 @@ public class UsersService {
         return usersRepository.count();
     }
 
+    @Transactional
     public String[] login(LoginReq req) {
         Users user = usersRepository.findByUsername(req.username())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 아이디입니다."));
@@ -61,11 +64,10 @@ public class UsersService {
                 accessExpireSeconds,
                 Map.of("username", user.getUsername())
         );
-        String refreshToken = JwtUtil.generateAccessToken(
-                jwtSecret,
-                refreshExpireSeconds,
-                Map.of("username", user.getUsername())
-        );
+
+        String refreshToken = UUID.randomUUID().toString();
+        LocalDateTime refreshTokenExpiration = LocalDateTime.now().plusSeconds(refreshExpireSeconds);
+        user.updateRefreshToken(refreshToken, refreshTokenExpiration);
 
         return new String[]{accessToken, refreshToken};
     }
