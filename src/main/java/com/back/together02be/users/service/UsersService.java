@@ -71,4 +71,27 @@ public class UsersService {
 
         return new String[]{accessToken, refreshToken};
     }
+
+    @Transactional
+    public String[] reissueToken(String refreshToken) {
+        Users user = usersRepository.findByRefreshToken(refreshToken)
+                .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 리프레시 토큰입니다."));
+
+        // 만료시간(10시) < 현재시간(11시) 일 경우
+        if (user.getRefreshTokenExpiration().isBefore(LocalDateTime.now())) {
+            throw new IllegalArgumentException("리프레시 토큰이 만료되었습니다.");
+        }
+
+        // 새로운 AccessToken 발급
+        String newAccessToken = JwtUtil.generateAccessToken(
+                jwtSecret,
+                accessExpireSeconds,
+                Map.of("username", user.getUsername())
+        );
+
+        String newRefreshToken = UUID.randomUUID().toString();
+        user.updateRefreshToken(newRefreshToken, LocalDateTime.now().plusSeconds(refreshExpireSeconds));
+
+        return new String[]{newAccessToken, newRefreshToken};
+    }
 }
