@@ -54,7 +54,7 @@ public class StockService {
         return result;
     }
 
-    @Scheduled(fixedRate = 1000) // 1초마다
+    @Scheduled(fixedDelay = 1000) // 1초마다
     public void updatePriceCache() {
 
         List<Stock> stocks = stockRepository.findByIsActiveTrue();
@@ -64,12 +64,8 @@ public class StockService {
         String token = kisPriceClient.getAccessToken();
 
         // 한투 OpenAPI 호출 제한 때문에 전체 종목을 한 번에 갱신하지 않고 순차 갱신
-        int batchSize = 1;
-
-        for (int i = 0; i < batchSize; i++) {
-
-            int index = (currentIndex + i) % stocks.size();
-            Stock stock = stocks.get(index);
+        int index = currentIndex % stocks.size();
+        Stock stock = stocks.get(index);
 
             try {
                 KisPriceRes price = kisPriceClient.getCurrentPrice(token, stock.getStockCode());
@@ -81,10 +77,10 @@ public class StockService {
                         new StockPriceCache(currentPrice, changeRate));
 
             } catch (Exception e) {
-                System.out.println("가격 갱신 실패: " + stock.getStockCode() + " / " + e.getMessage());            }
-        }
+                System.out.println("가격 갱신 실패: " + stock.getStockCode() + " / " + e.getMessage());
+            }
 
         // 다음 위치로 이동
-        currentIndex = (currentIndex + batchSize) % stocks.size();
+        currentIndex = (currentIndex + 1) % stocks.size();
     }
 }
