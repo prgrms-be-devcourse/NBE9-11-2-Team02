@@ -2,7 +2,8 @@ package com.back.together02be.users.controller;
 
 import com.back.together02be.global.apiRes.ApiRes;
 import com.back.together02be.users.dto.request.LoginReq;
-import com.back.together02be.users.dto.request.UsersReq;
+import com.back.together02be.users.dto.request.TokenReq;
+import com.back.together02be.users.dto.request.SignupReq;
 import com.back.together02be.users.dto.response.UsersRes;
 import com.back.together02be.users.service.UsersService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -25,15 +26,25 @@ public class UsersController {
 
     @PostMapping("/signup")
     @Operation(summary = "회원 가입")
-    public ResponseEntity<ApiRes<Void>> signup(@RequestBody UsersReq req) {
+    public ResponseEntity<ApiRes<Void>> signup(@RequestBody SignupReq req) {
         usersService.signup(req);
         return ResponseEntity.ok(new ApiRes<>("회원가입 성공", null));
     }
+
+    // tokens[0] : Access
+    // tokens[1] : Refresh
 
     @PostMapping("/login")
     @Operation(summary = "로그인")
     public ResponseEntity<ApiRes<UsersRes>> login(@RequestBody LoginReq req) {
         String[] tokens = usersService.login(req);
         return ResponseEntity.ok(new ApiRes<>("로그인 성공", new UsersRes(tokens[0], tokens[1])));
+    }
+
+    @PostMapping("/token")
+    @Operation(summary = "토큰 재발급")
+    public ResponseEntity<ApiRes<UsersRes>> reissueToken(@RequestBody TokenReq req) {
+        String[] tokens = usersService.reissueToken(req);
+        return ResponseEntity.ok(new ApiRes<>("토큰 재발급 성공", new UsersRes(tokens[0], tokens[1])));
     }
 }
