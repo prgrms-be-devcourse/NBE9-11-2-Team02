@@ -57,7 +57,6 @@ public class GlobalExceptionHandler {
 
 	@ExceptionHandler(Exception.class)
 	public ResponseEntity<ApiRes<Void>> handleException(Exception e) {
-		e.printStackTrace();
 		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
 			.body(new ApiRes<>("서버 오류가 발생했습니다.", null));
 	}

@@ -34,11 +34,13 @@ public class Users extends BaseEntity {
 		this.nickname = nickname;
 	}
 
+	// 리프레시 토큰 설정
 	public void updateRefreshToken(String refreshToken, LocalDateTime expiration) {
 		this.refreshToken = refreshToken;
 		this.refreshTokenExpiration = expiration;
 	}
 
+	// 리프레시 토큰 초기화
 	public void clearRefreshToken() {
 		this.refreshToken = null;
 		this.refreshTokenExpiration = null;
