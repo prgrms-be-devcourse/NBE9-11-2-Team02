@@ -7,6 +7,8 @@ import jakarta.persistence.Entity;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Getter
 @NoArgsConstructor
@@ -21,10 +23,25 @@ public class Users extends BaseEntity {
 	@Column(nullable = false, length = 30)
 	private String nickname;
 
+	@Column(unique = true)
+	private String refreshToken;
+
+	private LocalDateTime refreshTokenExpiration;
+
 	public Users(String username, String password, String nickname) {
 		this.username = username;
 		this.password = password;
 		this.nickname = nickname;
+	}
+
+	public void updateRefreshToken(String refreshToken, LocalDateTime expiration) {
+		this.refreshToken = refreshToken;
+		this.refreshTokenExpiration = expiration;
+	}
+
+	public void clearRefreshToken() {
+		this.refreshToken = null;
+		this.refreshTokenExpiration = null;
 	}
 
 }
