@@ -26,8 +26,8 @@ spring:
     show-sql: true
 
 jwt:
-  access-expire-seconds: 3600
-  refresh-expire-seconds: 1209600
+  access-expire-seconds: 900
+  refresh-expire-seconds: 604800
 
 springdoc:
   default-produces-media-type: application/json; charset=UTF-8
