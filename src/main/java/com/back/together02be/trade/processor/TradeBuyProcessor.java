@@ -7,6 +7,7 @@ import com.back.together02be.asset.repository.UserStockRepository;
 import com.back.together02be.stock.enitity.Stock;
 import com.back.together02be.stock.repository.StockRepository;
 import com.back.together02be.stock.service.RealTimeStockPriceStore;
+import com.back.together02be.stock.service.RealtimeStockPrice;
 import com.back.together02be.trade.dto.BuyReq;
 import com.back.together02be.trade.dto.BuyRes;
 import com.back.together02be.trade.enitity.Trade;
@@ -38,7 +39,7 @@ public class TradeBuyProcessor {
                 .orElseThrow(() -> new EntityNotFoundException("주식 정보가 없습니다."));
 
         // 2. 현재가 조회 — KIS WebSocket 수신 후 RealTimeStockPriceStore에 저장된 실시간 가격
-        var stockPrice = stockPriceStore.get(stock.getStockCode());
+        RealtimeStockPrice stockPrice = stockPriceStore.get(stock.getStockCode());
         if (stockPrice == null) {
             throw new EntityNotFoundException("현재가 정보를 불러올 수 없습니다. 잠시 후 다시 시도해주세요.");
         }
