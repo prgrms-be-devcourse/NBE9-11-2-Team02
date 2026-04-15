@@ -54,8 +54,8 @@ public class IdempotencyService {
 	@Scheduled(cron = "0 0 0 * * *")
 	@Transactional
 	public void cleanupExpiredKeys() {
-		LocalDateTime expiry = LocalDateTime.now().minusMinutes(5);
+		LocalDateTime expiry = LocalDateTime.now().minusDays(1);
 		idempotencyKeyRepository.deleteByCreatedAtBefore(expiry);
-		log.info("멱등성 키 정리 완료 ({}분 이전 키 삭제)", 5);
+		log.info("멱등성 키 정리 완료 (1일 이전 키 삭제)");
 	}
 }
