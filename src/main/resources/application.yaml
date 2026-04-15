@@ -3,6 +3,7 @@ spring:
     name: together-02-be
 
   profiles:
+    active: local
     include: secret
 
   datasource:
