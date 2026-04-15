@@ -43,5 +43,8 @@ out/
 *.mv.db
 *.trace.db
 
+# api key
+application-local.yml
+
 # Secret
 application-secret.yaml
