@@ -41,4 +41,11 @@ public class UserStock extends BaseEntity {
 		this.averagePrice = averagePrice;
 	}
 
+	public void updateQuantity(Long newQuantity){
+		if(newQuantity<0){
+			throw new IllegalArgumentException("보유 수량은 0보다 작을 수 없습니다.");
+		}
+		this.quantity = newQuantity;
+	}
+
 }
