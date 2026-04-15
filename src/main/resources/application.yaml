@@ -4,6 +4,7 @@ spring:
 
   profiles:
     active: local
+    include: secret
 
   datasource:
     url: jdbc:h2:mem:db_dev;MODE=MySQL
@@ -24,6 +25,10 @@ spring:
     hibernate:
       ddl-auto: create-drop
     show-sql: true
+
+jwt:
+  access-expire-seconds: 900
+  refresh-expire-seconds: 604800
 
 springdoc:
   default-produces-media-type: application/json; charset=UTF-8
