@@ -1,6 +1,6 @@
 package com.back.together02be.global.initData;
 
-import com.back.together02be.users.dto.request.UsersReq;
+import com.back.together02be.users.dto.request.SignupReq;
 import com.back.together02be.users.service.UsersService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationRunner;
@@ -40,9 +40,9 @@ public class BaseInitData {
 	public void work2() {
 		if (usersService.count() > 0) return;
 
-		usersService.signup(new UsersReq("user1", "1234", "1234", "유저1"));
-		usersService.signup(new UsersReq("user2", "1234", "1234", "유저2"));
-		usersService.signup(new UsersReq("user3", "1234", "1234", "유저3"));
+		usersService.signup(new SignupReq("user1", "1234", "1234", "유저1"));
+		usersService.signup(new SignupReq("user2", "1234", "1234", "유저2"));
+		usersService.signup(new SignupReq("user3", "1234", "1234", "유저3"));
 	}
 
 }
