@@ -23,7 +23,13 @@ public class StockService {
 	private final KisWebSocketClient kisWebSocketClient;
 
 	public SseEmitter createSseEmitter(String stockCode) {
-		kisWebSocketClient.subscribe(stockCode); // 구독 요청
+
+		int count = rtStockPriceStore.addSubscriber(stockCode); // 구독자 추가
+
+		// 종목의 첫 구독자일 때만 구독 요청
+		if (count == 1) {
+			kisWebSocketClient.subscribe(stockCode);
+		}
 
 		SseEmitter emitter = new SseEmitter(Long.MAX_VALUE);
 
@@ -39,19 +45,26 @@ public class StockService {
 				emitter.complete();
 				executor.shutdown();
 			} catch (Exception e) {
-				emitter.completeWithError(e);
+				log.error("SSE 오류 - 종목: {} | 원인: {}", stockCode, e.getMessage(), e);
+				emitter.complete();
 				executor.shutdown();
 			}
 		}, 0, 1, TimeUnit.SECONDS);
 
 		emitter.onCompletion(() -> {
-			log.info("✅ SSE 연결 끊김 - 종목: {}", stockCode);  // ← 로그 추가
 			executor.shutdown();
-			kisWebSocketClient.unsubscribe(stockCode);
+			int remaining = rtStockPriceStore.removeSubscriber(stockCode);
+			if (remaining <= 0) {
+				kisWebSocketClient.unsubscribe(stockCode);  // 마지막 구독자일 때만 취소
+			}
 		});
 
 		emitter.onTimeout(() -> {
 			executor.shutdown();
+			int remaining = rtStockPriceStore.removeSubscriber(stockCode);
+			if (remaining <= 0) {
+				kisWebSocketClient.unsubscribe(stockCode);
+			}
 			log.info("SSE 타임아웃 - 종목: {}", stockCode);
 		});
 
