@@ -16,7 +16,12 @@ spring:
     ansi:
       enabled: always
 
+  sql:
+    init:
+      mode: always
+
   jpa:
+    defer-datasource-initialization: true
     properties:
       hibernate:
         format_sql: true
