@@ -21,14 +21,10 @@ public class Stock extends BaseEntity {
 	@Column(nullable = false)
 	private String market;
 
-	@Column(nullable = false)
-	private Boolean isActive;
-
 	public Stock(String stockCode, String stockName, String market) {
 		this.stockCode = stockCode;
 		this.stockName = stockName;
 		this.market = market;
-		this.isActive = true;
 	}
 
 }

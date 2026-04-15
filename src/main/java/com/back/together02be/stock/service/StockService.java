@@ -27,10 +27,11 @@ public class StockService {
 
     private int currentIndex = 0;
 
+    //캐시 읽는 메서드
     public List<StockListRes> getStocks() {
         List<StockListRes> result = new ArrayList<>();
 
-        for (Stock stock : stockRepository.findByIsActiveTrue()) {
+        for (Stock stock : stockRepository.findAll()) {
             StockPriceCache cached = priceCache.get(stock.getStockCode());
 
             Long currentPrice = null;
@@ -54,10 +55,11 @@ public class StockService {
         return result;
     }
 
+    //스케줄러 메서드
     @Scheduled(fixedDelay = 1000) // 1초마다
     public void updatePriceCache() {
 
-        List<Stock> stocks = stockRepository.findByIsActiveTrue();
+        List<Stock> stocks = stockRepository.findAll();
 
         if (stocks.isEmpty()) return;
 
@@ -70,8 +72,8 @@ public class StockService {
             try {
                 KisPriceRes price = kisPriceClient.getCurrentPrice(token, stock.getStockCode());
 
-                Long currentPrice = Long.parseLong(price.output().stck_prpr());
-                Double changeRate = Double.parseDouble(price.output().prdy_ctrt());
+                Long currentPrice = Long.parseLong(price.output().currentPrice());
+                Double changeRate = Double.parseDouble(price.output().changeRate());
 
                 priceCache.put(stock.getStockCode(),
                         new StockPriceCache(currentPrice, changeRate));
