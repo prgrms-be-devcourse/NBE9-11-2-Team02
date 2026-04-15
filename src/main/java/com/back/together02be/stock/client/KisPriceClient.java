@@ -63,13 +63,15 @@ public class KisPriceClient {
         return cachedToken;
     }
 
+    // 토큰 + 종목코드 받아서 -> 한투 API 호출 -> 현재가 데이터 반환
     public KisPriceRes getCurrentPrice(String token, String stockCode) {
 
-        // 한투 현재가 조회 주소
+        //한투 API 주소 만드는 부분
         String url = restBaseUrl + "/uapi/domestic-stock/v1/quotations/inquire-price"
                 + "?fid_cond_mrkt_div_code=J"
                 + "&fid_input_iscd=" + stockCode;
 
+        //RestClient로 GET 요청
         KisPriceRes response = restClient.get()
                 .uri(url)
                 .headers(headers -> {
@@ -78,9 +80,11 @@ public class KisPriceClient {
                     headers.set("appsecret", appSecret);
                     headers.set("tr_id", "FHKST01010100");
                 })
+                //HTTP 응답(JSON) → KisPriceRes 객체로 변환
                 .retrieve()
                 .body(KisPriceRes.class);
 
+        //예외 처리
         if (response == null || response.output() == null) {
             throw new IllegalStateException("현재가 조회 실패: stockCode=" + stockCode);
         }
