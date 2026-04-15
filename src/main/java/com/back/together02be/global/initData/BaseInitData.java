@@ -9,6 +9,13 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.back.together02be.asset.enitity.UserAccount;
+import com.back.together02be.asset.repository.UserAccountRepository;
+import com.back.together02be.stock.enitity.Stock;
+import com.back.together02be.stock.repository.StockRepository;
+import com.back.together02be.users.enitity.Users;
+import com.back.together02be.users.repository.UsersRepository;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -17,6 +24,10 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @Slf4j
 public class BaseInitData {
+
+	private final UsersRepository usersRepository;
+	private final StockRepository stockRepository;
+	private final UserAccountRepository userAccountRepository;
 
 	@Autowired
 	@Lazy
@@ -34,6 +45,10 @@ public class BaseInitData {
 
 	@Transactional
 	public void work1() {
+		// 테스트용 시드 데이터 (H2 dev 환경 전용)
+		Users user = usersRepository.save(new Users("testuser", "password", "테스트유저"));
+		stockRepository.save(new Stock("005930", "삼성전자", "KOSPI"));
+		userAccountRepository.save(new UserAccount(user, 0L, 50_000_000L));
 	}
 
 	@Transactional
