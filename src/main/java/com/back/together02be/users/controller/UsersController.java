@@ -27,24 +27,54 @@ public class UsersController {
     @PostMapping("/signup")
     @Operation(summary = "회원 가입")
     public ResponseEntity<ApiRes<Void>> signup(@RequestBody SignupReq req) {
+
         usersService.signup(req);
-        return ResponseEntity.ok(new ApiRes<>("회원가입 성공", null));
+        return ResponseEntity.ok(
+                new ApiRes<>(
+                        "회원가입 성공",
+                        null
+                )
+        );
     }
 
-    // tokens[0] : Access
-    // tokens[1] : Refresh
+    // tokens[0] : Access, tokens[1] : Refresh
 
     @PostMapping("/login")
     @Operation(summary = "로그인")
     public ResponseEntity<ApiRes<UsersRes>> login(@RequestBody LoginReq req) {
+
         String[] tokens = usersService.login(req);
-        return ResponseEntity.ok(new ApiRes<>("로그인 성공", new UsersRes(tokens[0], tokens[1])));
+        return ResponseEntity.ok(
+                new ApiRes<>(
+                        "로그인 성공",
+                        new UsersRes(tokens[0], tokens[1])
+                )
+        );
     }
 
     @PostMapping("/token")
     @Operation(summary = "토큰 재발급")
     public ResponseEntity<ApiRes<UsersRes>> reissueToken(@RequestBody TokenReq req) {
+
         String[] tokens = usersService.reissueToken(req);
-        return ResponseEntity.ok(new ApiRes<>("토큰 재발급 성공", new UsersRes(tokens[0], tokens[1])));
+        return ResponseEntity.ok(
+                new ApiRes<>(
+                        "토큰 재발급 성공",
+                        new UsersRes(tokens[0], tokens[1])
+                )
+        );
+    }
+
+    @PostMapping("/logout")
+    @Operation(summary = "로그아웃")
+    public ResponseEntity<ApiRes<Void>> logout(@RequestBody TokenReq req) {
+
+        usersService.logout(req);
+        return ResponseEntity.ok(
+                new ApiRes<>(
+                        "로그아웃 성공",
+                        null
+                )
+        );
     }
 }

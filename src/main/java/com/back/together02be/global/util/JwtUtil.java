@@ -14,7 +14,11 @@ import io.jsonwebtoken.security.Keys;
 
 public class JwtUtil {
 
-    public static String generateAccessToken(String secret, long expireSeconds, Map<String, Object> body) {
+    public static String generateAccessToken(
+            String secret,
+            long expireSeconds,
+            Map<String, Object> body
+    ) {
         ClaimsBuilder claimsBuilder = Jwts.claims();
 
         for (Map.Entry<String, Object> entry : body.entrySet()) {
@@ -37,6 +41,7 @@ public class JwtUtil {
     }
 
     public static boolean isValid(String token, String secret) {
+
         SecretKey secretKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
 
         try {
@@ -53,6 +58,7 @@ public class JwtUtil {
     }
 
     public static Map<String, Object> payloadOrNull(String token, String secret) {
+
         SecretKey secretKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
 
         if (isValid(token, secret)) {
