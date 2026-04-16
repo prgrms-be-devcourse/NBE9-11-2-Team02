@@ -25,6 +25,7 @@ spring:
     hibernate:
       ddl-auto: create-drop
     show-sql: true
+    defer-datasource-initialization: true
 
 jwt:
   access-expire-seconds: 900
