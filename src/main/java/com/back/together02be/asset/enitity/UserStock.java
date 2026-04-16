@@ -1,7 +1,7 @@
 package com.back.together02be.asset.enitity;
 
 import com.back.together02be.global.entity.BaseEntity;
-import com.back.together02be.stock.enitity.Stock;
+import com.back.together02be.stock.entity.Stock;
 import com.back.together02be.users.entity.Users;
 
 import jakarta.persistence.Column;
@@ -39,6 +39,13 @@ public class UserStock extends BaseEntity {
 		this.stock = stock;
 		this.quantity = quantity;
 		this.averagePrice = averagePrice;
+	}
+
+	// 매수 시 수량 증가 + 평균매입가 재계산
+	public void updateOnBuy(Long buyQuantity, Long buyPrice) {
+		long newTotalCost = this.quantity * this.averagePrice + buyQuantity * buyPrice;
+		this.quantity += buyQuantity;
+		this.averagePrice = newTotalCost / this.quantity;
 	}
 
 }
