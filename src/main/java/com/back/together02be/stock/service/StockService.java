@@ -10,6 +10,8 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import com.back.together02be.infra.kis.KisWebSocketClient;
 import com.back.together02be.stock.dto.RealtimeStockPrice;
+import com.back.together02be.stock.dto.response.StockPriceRes;
+import com.back.together02be.stock.entity.Stock;
 import com.back.together02be.stock.repository.StockRepository;
 
 import jakarta.persistence.EntityNotFoundException;
@@ -27,8 +29,7 @@ public class StockService {
 
 	public SseEmitter createSseEmitter(String stockCode) {
 
-		stockRepository.findByStockCode(stockCode)
-			.orElseThrow(() -> new EntityNotFoundException("존재하지 않는 종목코드입니다: " + stockCode));
+		findStock(stockCode);
 
 		int count = rtStockPriceStore.addSubscriber(stockCode); // 구독자 추가
 
@@ -75,5 +76,14 @@ public class StockService {
 		});
 
 		return emitter;
+	}
+
+	public StockPriceRes getStockPrice(String stockCode) {
+		return StockPriceRes.from(findStock(stockCode));
+	}
+
+	private Stock findStock(String stockCode) {
+		return stockRepository.findByStockCode(stockCode)
+			.orElseThrow(() -> new EntityNotFoundException("존재하지 않는 종목코드입니다: " + stockCode));
 	}
 }
