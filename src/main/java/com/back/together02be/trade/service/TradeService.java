@@ -8,17 +8,15 @@ import com.back.together02be.stock.enitity.RealtimeStockPrice;
 import com.back.together02be.stock.enitity.Stock;
 import com.back.together02be.stock.repository.StockRepository;
 import com.back.together02be.stock.service.RealtimeStockPriceService;
-import com.back.together02be.trade.controller.TradeController;
+import com.back.together02be.trade.dto.request.TradeSellReq;
 import com.back.together02be.trade.enitity.Trade;
-import com.back.together02be.trade.enitity.TradeType;
 import com.back.together02be.trade.repository.TradeRepository;
 import com.back.together02be.users.entity.Users;
+import jakarta.validation.Valid;
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -30,7 +28,7 @@ public class TradeService {
     private final StockRepository stockRepository;
     private final RealtimeStockPriceService realtimeStockPriceService;
 
-    public void sell(TradeController.TradeSellReq req){
+    public void sell(@Valid TradeSellReq req){
         // 1. 보유 주식 조회 + X-Lock
         //    (users_id, stock_id) 단위 락 → 다른 종목은 병렬 처리
         UserStock userStock = userStockRepository.findByUsersIdAndStockIdWithLock(req.userId(),req.stockId())
