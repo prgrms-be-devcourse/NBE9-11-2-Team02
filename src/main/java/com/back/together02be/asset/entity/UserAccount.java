@@ -32,6 +32,14 @@ public class UserAccount extends BaseEntity {
 		this.deposit = deposit;
 	}
 
+	public void decreaseDeposit(Long amount) {
+		this.deposit -= amount;
+	}
+
+	public void increaseTotalPurchase(Long amount) {
+		this.totalPurchase += amount;
+	}
+
 	public void addDeposit(Long amount) {
 		this.deposit += amount;  // 누적 합산
 	}

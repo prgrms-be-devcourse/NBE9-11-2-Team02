@@ -4,8 +4,8 @@ import com.back.together02be.asset.entity.UserAccount;
 import com.back.together02be.asset.entity.UserStock;
 import com.back.together02be.asset.repository.UserAccountRepository;
 import com.back.together02be.asset.repository.UserStockRepository;
-import com.back.together02be.stock.entity.RealtimeStockPrice;
-import com.back.together02be.stock.service.RealtimeStockPriceService;
+import com.back.together02be.stock.dto.RealtimeStockPrice;
+import com.back.together02be.stock.service.RealTimeStockPriceStore;
 import com.back.together02be.trade.controller.TradeController;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.BeforeEach;
@@ -22,8 +22,6 @@ import org.springframework.test.web.servlet.ResultActions;
 import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -44,8 +42,7 @@ public class TradeControllerSellTest {
     private UserAccountRepository userAccountRepository;
 
     @Autowired
-    private RealtimeStockPriceService realtimeStockPriceService;
-
+    private RealTimeStockPriceStore realtimeStockPriceService;
 
     // ────────────────────────────────────────────
     // 성공 케이스
@@ -68,6 +65,7 @@ public class TradeControllerSellTest {
     @Test
     @DisplayName("매도 성공 - 부분 매도")
     void t1() throws Exception {
+
         ResultActions result = mvc
                 .perform(
                         post("/api/trades/sell")

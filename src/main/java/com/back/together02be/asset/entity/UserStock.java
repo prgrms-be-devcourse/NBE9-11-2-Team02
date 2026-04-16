@@ -41,6 +41,13 @@ public class UserStock extends BaseEntity {
 		this.averagePrice = averagePrice;
 	}
 
+	// 매수 시 수량 증가 + 평균매입가 재계산
+	public void updateOnBuy(Long buyQuantity, Long buyPrice) {
+		long newTotalCost = this.quantity * this.averagePrice + buyQuantity * buyPrice;
+		this.quantity += buyQuantity;
+		this.averagePrice = newTotalCost / this.quantity;
+	}
+
 	public void updateQuantity(Long newQuantity){
 		if(newQuantity<0){
 			throw new IllegalArgumentException("보유 수량은 0보다 작을 수 없습니다.");
