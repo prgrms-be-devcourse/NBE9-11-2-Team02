@@ -4,7 +4,6 @@ import com.back.together02be.asset.entity.UserStock;
 import jakarta.persistence.LockModeType;
 import jakarta.persistence.QueryHint;
 import org.springframework.data.jpa.repository.JpaRepository;
-
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.jpa.repository.QueryHints;
@@ -13,6 +12,8 @@ import org.springframework.data.repository.query.Param;
 import java.util.Optional;
 
 public interface UserStockRepository extends JpaRepository<UserStock, Long> {
+	Optional<UserStock> findByUsersIdAndStockId(Long usersId, Long stockId);
+
     //비관적 락
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @QueryHints(@QueryHint(
@@ -29,9 +30,4 @@ public interface UserStockRepository extends JpaRepository<UserStock, Long> {
             @Param("stockId") Long stockId
     );
     void delete(UserStock userStock);
-
-    Optional<UserStock> findByUsersIdAndStockId(
-            Long userId,
-            Long stockId
-    );
 }

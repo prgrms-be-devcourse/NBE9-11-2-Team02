@@ -4,10 +4,10 @@ import com.back.together02be.asset.entity.UserAccount;
 import com.back.together02be.asset.entity.UserStock;
 import com.back.together02be.asset.repository.UserAccountRepository;
 import com.back.together02be.asset.repository.UserStockRepository;
-import com.back.together02be.stock.entity.RealtimeStockPrice;
+import com.back.together02be.stock.dto.RealtimeStockPrice;
 import com.back.together02be.stock.entity.Stock;
 import com.back.together02be.stock.repository.StockRepository;
-import com.back.together02be.stock.service.RealtimeStockPriceService;
+import com.back.together02be.stock.service.RealTimeStockPriceStore;
 import com.back.together02be.trade.repository.TradeRepository;
 import com.back.together02be.users.entity.Users;
 import com.back.together02be.users.repository.UsersRepository;
@@ -29,7 +29,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-//import static org.springframework.mock.http.server.reactive.MockServerHttpRequest.post;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
@@ -57,7 +56,7 @@ public class TradeControllerSellConcurrencyTest {
     private StockRepository stockRepository;
 
     @Autowired
-    private RealtimeStockPriceService realtimeStockPriceService;
+    private RealTimeStockPriceStore realtimeStockPriceService;
 
     private Users users;
     private Stock stock;

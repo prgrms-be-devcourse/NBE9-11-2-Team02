@@ -42,3 +42,11 @@ out/
 # H2 Database
 *.mv.db
 *.trace.db
+
+# api key
+application-local.yml
+application-local.yaml
+
+# Secret
+application-secret.yaml
+application-secret.yml

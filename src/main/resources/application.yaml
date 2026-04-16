@@ -2,6 +2,10 @@ spring:
   application:
     name: together-02-be
 
+  profiles:
+    active: local
+    include: secret
+
   datasource:
     url: jdbc:h2:mem:db_dev;MODE=MySQL
     username: sa
@@ -21,6 +25,12 @@ spring:
     hibernate:
       ddl-auto: create-drop
     show-sql: true
+    defer-datasource-initialization: true
+
+jwt:
+  access-expire-seconds: 900
+  refresh-expire-seconds: 604800
+  secret: ${JWT_SECRET:default-secret}
 
 springdoc:
   default-produces-media-type: application/json; charset=UTF-8
