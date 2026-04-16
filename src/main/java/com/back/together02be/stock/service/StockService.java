@@ -41,7 +41,7 @@ public class StockService {
 	private final RealTimeStockPriceStore rtStockPriceStore;
 	private final KisWebSocketClient kisWebSocketClient;
 
-	// REST 전체 종목 조회용 캐시
+	// REST 전체 종목 조회용 캐시 // 캐시가 아니고 캐시처럼 사용, 조회할때는
     private final Map<String, StockPriceCache> priceCache = new ConcurrentHashMap<>();
 
     private int currentIndex = 0;
@@ -65,7 +65,6 @@ public class StockService {
                     stock.getId(),
                     stock.getStockCode(),
                     stock.getStockName(),
-                    stock.getMarket(),
                     currentPrice,
                     changeRate
             ));

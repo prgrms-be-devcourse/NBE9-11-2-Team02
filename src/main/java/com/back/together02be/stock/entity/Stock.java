@@ -18,13 +18,11 @@ public class Stock extends BaseEntity {
 	@Column(nullable = false)
 	private String stockName;
 
-	@Column(nullable = false)
-	private String market;
 
-	public Stock(String stockCode, String stockName, String market) {
+
+	public Stock(String stockCode, String stockName) {
 		this.stockCode = stockCode;
 		this.stockName = stockName;
-		this.market = market;
 	}
 
 }
