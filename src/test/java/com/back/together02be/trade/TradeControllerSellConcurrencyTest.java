@@ -4,8 +4,10 @@ import com.back.together02be.asset.enitity.UserAccount;
 import com.back.together02be.asset.enitity.UserStock;
 import com.back.together02be.asset.repository.UserAccountRepository;
 import com.back.together02be.asset.repository.UserStockRepository;
+import com.back.together02be.stock.enitity.RealtimeStockPrice;
 import com.back.together02be.stock.enitity.Stock;
 import com.back.together02be.stock.repository.StockRepository;
+import com.back.together02be.stock.service.RealtimeStockPriceService;
 import com.back.together02be.trade.repository.TradeRepository;
 import com.back.together02be.users.entity.Users;
 import com.back.together02be.users.repository.UsersRepository;
@@ -55,8 +57,12 @@ public class TradeControllerSellConcurrencyTest {
     @Autowired
     private StockRepository stockRepository;
 
+    @Autowired
+    private RealtimeStockPriceService realtimeStockPriceService;
+
     private Users users;
     private Stock stock;
+    private final long MARKET_PRICE = 75000L;
 
     // ────────────────────────────────────────────
     // 각 테스트마다 깨끗한 데이터 세팅
@@ -74,6 +80,13 @@ public class TradeControllerSellConcurrencyTest {
 
         users = usersRepository.save(new Users("testuser", "password123", "테스터"));
         stock = stockRepository.save(new Stock("005930", "삼성전자", "KOSPI"));
+
+        RealtimeStockPrice samsungPrice = RealtimeStockPrice.builder()
+                .stockCode("005930")
+                .price(String.valueOf(MARKET_PRICE))
+                .build();
+        realtimeStockPriceService.put("005930", samsungPrice);
+
     }
 
     @AfterEach
@@ -109,8 +122,7 @@ public class TradeControllerSellConcurrencyTest {
                 {
                     "userId": %d,
                     "stockId": %d,
-                    "quantity": 5,
-                    "price": 75000
+                    "quantity": 5
                 }
                 """.formatted(users.getId(), stock.getId());
 
@@ -183,8 +195,7 @@ public class TradeControllerSellConcurrencyTest {
                 {
                     "userId": %d,
                     "stockId": %d,
-                    "quantity": 10,
-                    "price": 75000
+                    "quantity": 10
                 }
                 """.formatted(users.getId(), stock.getId());
 
@@ -257,8 +268,7 @@ public class TradeControllerSellConcurrencyTest {
                 {
                     "userId": %d,
                     "stockId": %d,
-                    "quantity": 1,
-                    "price": 75000
+                    "quantity": 1
                 }
                 """.formatted(users.getId(), stock.getId());
 
