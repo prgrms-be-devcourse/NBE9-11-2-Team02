@@ -1,12 +1,10 @@
 package com.back.together02be.asset.repository;
 
-import com.back.together02be.asset.enitity.UserStock;
 import jakarta.persistence.LockModeType;
 import jakarta.persistence.QueryHint;
-import org.h2.engine.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import com.back.together02be.asset.enitity.UserAccount;
+import com.back.together02be.asset.entity.UserAccount;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.jpa.repository.QueryHints;

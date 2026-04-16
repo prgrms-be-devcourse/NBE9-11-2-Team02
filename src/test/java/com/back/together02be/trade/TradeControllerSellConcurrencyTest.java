@@ -1,17 +1,16 @@
 package com.back.together02be.trade;
 
-import com.back.together02be.asset.enitity.UserAccount;
-import com.back.together02be.asset.enitity.UserStock;
+import com.back.together02be.asset.entity.UserAccount;
+import com.back.together02be.asset.entity.UserStock;
 import com.back.together02be.asset.repository.UserAccountRepository;
 import com.back.together02be.asset.repository.UserStockRepository;
-import com.back.together02be.stock.enitity.RealtimeStockPrice;
-import com.back.together02be.stock.enitity.Stock;
+import com.back.together02be.stock.entity.RealtimeStockPrice;
+import com.back.together02be.stock.entity.Stock;
 import com.back.together02be.stock.repository.StockRepository;
 import com.back.together02be.stock.service.RealtimeStockPriceService;
 import com.back.together02be.trade.repository.TradeRepository;
 import com.back.together02be.users.entity.Users;
 import com.back.together02be.users.repository.UsersRepository;
-import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

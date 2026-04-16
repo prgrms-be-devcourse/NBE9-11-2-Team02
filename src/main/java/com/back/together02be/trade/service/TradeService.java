@@ -1,15 +1,15 @@
 package com.back.together02be.trade.service;
 
-import com.back.together02be.asset.enitity.UserAccount;
-import com.back.together02be.asset.enitity.UserStock;
+import com.back.together02be.asset.entity.UserAccount;
+import com.back.together02be.asset.entity.UserStock;
 import com.back.together02be.asset.repository.UserAccountRepository;
 import com.back.together02be.asset.repository.UserStockRepository;
-import com.back.together02be.stock.enitity.RealtimeStockPrice;
-import com.back.together02be.stock.enitity.Stock;
+import com.back.together02be.stock.entity.RealtimeStockPrice;
+import com.back.together02be.stock.entity.Stock;
 import com.back.together02be.stock.repository.StockRepository;
 import com.back.together02be.stock.service.RealtimeStockPriceService;
 import com.back.together02be.trade.dto.request.TradeSellReq;
-import com.back.together02be.trade.enitity.Trade;
+import com.back.together02be.trade.entity.Trade;
 import com.back.together02be.trade.repository.TradeRepository;
 import com.back.together02be.users.entity.Users;
 import jakarta.validation.Valid;
@@ -20,7 +20,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class TradeService {
     private final TradeRepository tradeRepository;
     private final UserStockRepository userStockRepository;
@@ -28,6 +27,7 @@ public class TradeService {
     private final StockRepository stockRepository;
     private final RealtimeStockPriceService realtimeStockPriceService;
 
+    @Transactional
     public void sell(@Valid TradeSellReq req){
         // 1. 보유 주식 조회 + X-Lock
         //    (users_id, stock_id) 단위 락 → 다른 종목은 병렬 처리
