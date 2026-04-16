@@ -1,35 +1,30 @@
 package com.back.together02be.stock.service;
 
+
+import com.back.together02be.infra.kis.KisWebSocketClient;
 import com.back.together02be.stock.cache.StockPriceCache;
 import com.back.together02be.stock.client.KisPriceClient;
 import com.back.together02be.stock.dto.KisPriceRes;
-import com.back.together02be.stock.dto.StockListRes;
-import com.back.together02be.stock.entity.Stock;
-import com.back.together02be.stock.repository.StockRepository;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Service;
-import java.io.IOException;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-
-import org.springframework.stereotype.Service;
-import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
-
-import com.back.together02be.infra.kis.KisWebSocketClient;
 import com.back.together02be.stock.dto.RealtimeStockPrice;
+import com.back.together02be.stock.dto.StockListRes;
 import com.back.together02be.stock.dto.response.StockPriceRes;
 import com.back.together02be.stock.entity.Stock;
 import com.back.together02be.stock.repository.StockRepository;
-
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Service;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
@@ -67,7 +62,6 @@ public class StockService {
                     stock.getId(),
                     stock.getStockCode(),
                     stock.getStockName(),
-                    stock.getMarket(),
                     currentPrice,
                     changeRate
             ));
