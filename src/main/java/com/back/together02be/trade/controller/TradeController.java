@@ -15,14 +15,13 @@ import lombok.RequiredArgsConstructor;
 @Tag(name = "TradeController", description = "주식 거래 API")
 public class TradeController {
     private final TradeService tradeService;
-
     public record TradeSellReq(
             Long userId,
             Long stockId,
             @Min(value = 1, message = "매도 수량은 최소 1개여야 합니다.")
-            Long quantity,
-            @Min(value = 1, message = "가격은 0이하일 수 없습니다. ")
-            Long price
+            Long quantity
+            //@Min(value = 1, message = "가격은 0이하일 수 없습니다. ")
+            //Long price
     ){ }
 
     @PostMapping("/sell")

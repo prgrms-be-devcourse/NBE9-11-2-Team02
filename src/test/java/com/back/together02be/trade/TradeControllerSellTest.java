@@ -5,8 +5,10 @@ import com.back.together02be.asset.enitity.UserStock;
 import com.back.together02be.asset.repository.UserAccountRepository;
 import com.back.together02be.asset.repository.UserStockRepository;
 import com.back.together02be.global.initData.TestInitData;
+import com.back.together02be.stock.enitity.RealtimeStockPrice;
 import com.back.together02be.stock.enitity.Stock;
 import com.back.together02be.stock.repository.StockRepository;
+import com.back.together02be.stock.service.RealtimeStockPriceService;
 import com.back.together02be.trade.controller.TradeController;
 import com.back.together02be.trade.enitity.Trade;
 import com.back.together02be.trade.repository.TradeRepository;
@@ -59,10 +61,27 @@ public class TradeControllerSellTest {
     @Autowired
     private UserAccountRepository userAccountRepository;
 
+    @Autowired
+    private RealtimeStockPriceService realtimeStockPriceService;
+
 
     // ────────────────────────────────────────────
     // 성공 케이스
     // ────────────────────────────────────────────
+
+    @BeforeEach
+    void setUp() {
+        // 테스트용 실시간 가격 데이터 주입 (삼성전자 등)
+        RealtimeStockPrice samsungPrice = RealtimeStockPrice.builder()
+                .stockCode("005930")
+                .price("75000")
+                .changeSign("1")
+                .change("1")
+                .changeRate("3")
+                .tradeTime("17:05")
+                .build();
+        realtimeStockPriceService.put("005930", samsungPrice);
+    }
 
     @Test
     @DisplayName("매도 성공 - 부분 매도")
@@ -75,8 +94,7 @@ public class TradeControllerSellTest {
                                         {
                                             "userId": 1,
                                             "stockId": 1,
-                                            "quantity": 5,
-                                            "price": 75000
+                                            "quantity": 5
                                         }
                                         """)
                 )
@@ -113,8 +131,7 @@ public class TradeControllerSellTest {
                                         {
                                             "userId": 1,
                                             "stockId": 1,
-                                            "quantity": 10,
-                                            "price": 75000
+                                            "quantity": 10
                                         }
                                         """)
                 )
@@ -142,6 +159,12 @@ public class TradeControllerSellTest {
     @Test
     @DisplayName("매도 성공 - 손실 매도 (현재가 < 평단가)")
     void t3() throws Exception {
+        RealtimeStockPrice lossPrice = RealtimeStockPrice.builder()
+                .stockCode("005930")
+                .price("60000")
+                .build();
+        realtimeStockPriceService.put("005930", lossPrice);
+
         ResultActions result = mvc
                 .perform(
                         post("/api/trades/sell")
@@ -150,8 +173,7 @@ public class TradeControllerSellTest {
                                         {
                                             "userId": 1,
                                             "stockId": 1,
-                                            "quantity": 1,
-                                            "price": 60000
+                                            "quantity": 1
                                         }
                                         """)
                 )
@@ -255,6 +277,7 @@ public class TradeControllerSellTest {
                 .andExpect(status().isBadRequest());
     }
 
+    /*
     @Test
     @DisplayName("매도 실패 - price가 0 이하")
     void t7() throws Exception {
@@ -278,6 +301,7 @@ public class TradeControllerSellTest {
                 .andExpect(handler().methodName("sell"))
                 .andExpect(status().isBadRequest());
     }
+    */
 
     @Test
     @DisplayName("매도 실패 - 존재하지 않는 유저")
