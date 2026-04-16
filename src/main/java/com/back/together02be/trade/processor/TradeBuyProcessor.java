@@ -1,0 +1,89 @@
+package com.back.together02be.trade.processor;
+
+import com.back.together02be.asset.enitity.UserAccount;
+import com.back.together02be.asset.enitity.UserStock;
+import com.back.together02be.asset.repository.UserAccountRepository;
+import com.back.together02be.asset.repository.UserStockRepository;
+import com.back.together02be.stock.entity.Stock;
+import com.back.together02be.stock.repository.StockRepository;
+import com.back.together02be.stock.service.RealTimeStockPriceStore;
+import com.back.together02be.stock.dto.RealtimeStockPrice;
+import com.back.together02be.trade.dto.BuyReq;
+import com.back.together02be.trade.dto.BuyRes;
+import com.back.together02be.trade.enitity.Trade;
+import com.back.together02be.trade.repository.TradeRepository;
+import jakarta.persistence.EntityNotFoundException;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+
+/**
+ * 매수 트랜잭션 처리 전담 컴포넌트.
+ * <p>
+ * TradeService와 분리된 별도 빈으로 존재해야 Spring AOP 프록시를 통해 @Transactional이 정상 동작한다.
+ */
+@Component
+@RequiredArgsConstructor
+public class TradeBuyProcessor {
+
+    private final RealTimeStockPriceStore stockPriceStore;
+    private final UserAccountRepository userAccountRepository;
+    private final UserStockRepository userStockRepository;
+    private final StockRepository stockRepository;
+    private final TradeRepository tradeRepository;
+
+    @Transactional
+    public BuyRes processBuy(Long userId, BuyReq request) {
+        // 1. 주식 정보 조회
+        Stock stock = stockRepository.findById(request.stockId())
+                .orElseThrow(() -> new EntityNotFoundException("주식 정보가 없습니다."));
+
+        // 2. 현재가 조회 — KIS WebSocket 수신 후 RealTimeStockPriceStore에 저장된 실시간 가격
+        RealtimeStockPrice stockPrice = stockPriceStore.get(stock.getStockCode());
+        if (stockPrice == null) {
+            throw new EntityNotFoundException("현재가 정보를 불러올 수 없습니다. 잠시 후 다시 시도해주세요.");
+        }
+        Long price = Long.parseLong(stockPrice.getPrice());
+        long amount = price * request.quantity();
+
+        // 3. 계좌 조회 및 잔고 검증
+        UserAccount account = userAccountRepository.findByUsersId(userId)
+                .orElseThrow(() -> new EntityNotFoundException("계좌 정보가 없습니다."));
+
+        if (account.getDeposit() < amount) {
+            throw new IllegalStateException(
+                    String.format("잔고가 부족합니다. (필요: %,d원 / 보유: %,d원)", amount, account.getDeposit())
+            );
+        }
+
+        // 4. 잔고 차감 및 누적 매수금액 증가
+        account.decreaseDeposit(amount);
+        account.increaseTotalPurchase(amount);
+
+        // 5. 보유 주식 업데이트 — 신규/추가 매수에 따라 분기
+        UserStock userStock = userStockRepository
+                .findByUsersIdAndStockId(userId, request.stockId())
+                .orElse(null);
+
+        if (userStock == null) {
+            userStock = new UserStock(account.getUsers(), stock, request.quantity(), price);
+            userStockRepository.save(userStock);
+        } else {
+            // 평균매입가 = (기존보유금액 + 신규매수금액) / 총수량
+            userStock.updateOnBuy(request.quantity(), price);
+        }
+
+        // 6. 거래 내역 저장
+        Trade trade = Trade.buy(account.getUsers(), stock, request.quantity(), price);
+        tradeRepository.save(trade);
+
+        return new BuyRes(
+                trade.getId(),
+                stock.getStockName(),
+                request.quantity(),
+                price,
+                amount,
+                account.getDeposit()
+        );
+    }
+}

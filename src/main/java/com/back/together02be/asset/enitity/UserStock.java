@@ -41,4 +41,11 @@ public class UserStock extends BaseEntity {
 		this.averagePrice = averagePrice;
 	}
 
+	// 매수 시 수량 증가 + 평균매입가 재계산
+	public void updateOnBuy(Long buyQuantity, Long buyPrice) {
+		long newTotalCost = this.quantity * this.averagePrice + buyQuantity * buyPrice;
+		this.quantity += buyQuantity;
+		this.averagePrice = newTotalCost / this.quantity;
+	}
+
 }
