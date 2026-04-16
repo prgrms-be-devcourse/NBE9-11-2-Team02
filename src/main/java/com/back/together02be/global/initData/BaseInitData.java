@@ -3,6 +3,7 @@ package com.back.together02be.global.initData;
 import com.back.together02be.asset.enitity.UserAccount;
 import com.back.together02be.asset.repository.UserAccountRepository;
 import com.back.together02be.stock.entity.Stock;
+import com.back.together02be.stock.entity.StockMarket;
 import com.back.together02be.stock.repository.StockRepository;
 import com.back.together02be.users.dto.request.SignupReq;
 import com.back.together02be.users.entity.Users;
@@ -16,7 +17,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.transaction.annotation.Transactional;
-
 
 @Configuration
 @RequiredArgsConstructor
@@ -45,7 +45,7 @@ public class BaseInitData {
     public void work1() {
         // 테스트용 시드 데이터 (H2 dev 환경 전용)
         Users user = usersRepository.save(new Users("testuser", "password", "테스트유저"));
-        stockRepository.save(new Stock("005930", "삼성전자", "KOSPI"));
+        stockRepository.save(new Stock("005930", "삼성전자", StockMarket.KOSPI));
         userAccountRepository.save(new UserAccount(user, 0L, 50_000_000L));
     }
 
