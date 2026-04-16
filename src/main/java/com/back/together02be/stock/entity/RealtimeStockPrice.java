@@ -1,9 +1,7 @@
-package com.back.together02be.stock.enitity;
+package com.back.together02be.stock.entity;
 
-import jakarta.persistence.Entity;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 @Getter
 @Builder

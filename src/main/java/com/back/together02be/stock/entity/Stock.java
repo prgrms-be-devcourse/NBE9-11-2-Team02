@@ -1,4 +1,4 @@
-package com.back.together02be.stock.enitity;
+package com.back.together02be.stock.entity;
 
 import com.back.together02be.global.entity.BaseEntity;
 

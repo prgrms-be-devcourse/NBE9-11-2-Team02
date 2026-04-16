@@ -1,9 +1,9 @@
-package com.back.together02be.trade.enitity;
+package com.back.together02be.trade.entity;
 
 import java.time.LocalDateTime;
 
 import com.back.together02be.global.entity.BaseEntity;
-import com.back.together02be.stock.enitity.Stock;
+import com.back.together02be.stock.entity.Stock;
 import com.back.together02be.users.entity.Users;
 
 import jakarta.persistence.Column;

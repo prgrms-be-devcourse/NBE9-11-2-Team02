@@ -1,6 +1,6 @@
 package com.back.together02be.stock.service;
 
-import com.back.together02be.stock.enitity.RealtimeStockPrice;
+import com.back.together02be.stock.entity.RealtimeStockPrice;
 import org.springframework.stereotype.Service;
 
 import java.util.concurrent.ConcurrentHashMap;
