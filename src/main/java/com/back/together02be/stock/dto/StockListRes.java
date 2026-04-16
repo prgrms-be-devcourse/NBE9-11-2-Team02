@@ -6,7 +6,6 @@ public record StockListRes(
         Long id,
         String stockCode,
         String stockName,
-        String market,
         Long currentPrice,
         Double changeRate
 ) {
