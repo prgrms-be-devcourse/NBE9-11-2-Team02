@@ -1,11 +1,13 @@
 package com.back.together02be.stock.service;
 
+
 import com.back.together02be.infra.kis.KisWebSocketClient;
 import com.back.together02be.stock.cache.StockPriceCache;
 import com.back.together02be.stock.client.KisPriceClient;
 import com.back.together02be.stock.dto.KisPriceRes;
 import com.back.together02be.stock.dto.RealtimeStockPrice;
 import com.back.together02be.stock.dto.StockListRes;
+import com.back.together02be.stock.dto.response.StockPriceRes;
 import com.back.together02be.stock.entity.Stock;
 import com.back.together02be.stock.repository.StockRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -36,7 +38,7 @@ public class StockService {
 	private final RealTimeStockPriceStore rtStockPriceStore;
 	private final KisWebSocketClient kisWebSocketClient;
 
-	// REST 전체 종목 조회용 캐시 // 캐시가 아니고 캐시처럼 사용, 조회할때는
+	// REST 전체 종목 조회용 캐시
     private final Map<String, StockPriceCache> priceCache = new ConcurrentHashMap<>();
 
     private int currentIndex = 0;
@@ -102,8 +104,7 @@ public class StockService {
 
 	public SseEmitter createSseEmitter(String stockCode) {
 
-		stockRepository.findByStockCode(stockCode)
-			.orElseThrow(() -> new EntityNotFoundException("존재하지 않는 종목코드입니다: " + stockCode));
+		findStock(stockCode);
 
 		int count = rtStockPriceStore.addSubscriber(stockCode); // 구독자 추가
 
@@ -150,5 +151,14 @@ public class StockService {
 		});
 
 		return emitter;
+	}
+
+	public StockPriceRes getStockPrice(String stockCode) {
+		return StockPriceRes.from(findStock(stockCode));
+	}
+
+	private Stock findStock(String stockCode) {
+		return stockRepository.findByStockCode(stockCode)
+			.orElseThrow(() -> new EntityNotFoundException("존재하지 않는 종목코드입니다: " + stockCode));
 	}
 }
