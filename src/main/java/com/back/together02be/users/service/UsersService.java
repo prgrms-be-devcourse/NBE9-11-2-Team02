@@ -53,6 +53,7 @@ public class UsersService {
 
     @Transactional
     public String[] login(LoginReq req) {
+
         Users user = usersRepository
                 .findByUsername(req.username())
                 .orElseThrow(
@@ -81,7 +82,20 @@ public class UsersService {
     }
 
     @Transactional
+    public void logout(TokenReq req) {
+
+        Users user = usersRepository
+                .findByRefreshToken(req.refreshToken())
+                .orElseThrow(
+                        () -> new IllegalArgumentException("유효하지 않은 리프레시 토큰입니다.")
+                );
+
+        user.clearRefreshToken();
+    }
+
+    @Transactional
     public String[] reissueToken(TokenReq req) {
+
         Users user = usersRepository
                 .findByRefreshToken(req.refreshToken())
                 .orElseThrow(

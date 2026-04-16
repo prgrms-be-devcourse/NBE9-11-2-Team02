@@ -3,6 +3,7 @@ spring:
     name: together-02-be
 
   profiles:
+    active: local
     include: secret
 
   datasource:
@@ -24,6 +25,7 @@ spring:
     hibernate:
       ddl-auto: create-drop
     show-sql: true
+    defer-datasource-initialization: true
 
 jwt:
   access-expire-seconds: 900
