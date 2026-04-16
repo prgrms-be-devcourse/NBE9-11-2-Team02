@@ -32,4 +32,12 @@ public class UserAccount extends BaseEntity {
 		this.deposit = deposit;
 	}
 
+	public void decreaseDeposit(Long amount) {
+		this.deposit -= amount;
+	}
+
+	public void increaseTotalPurchase(Long amount) {
+		this.totalPurchase += amount;
+	}
+
 }
