@@ -1,14 +1,25 @@
 package com.back.together02be.global.springDoc;
 
+import io.swagger.v3.oas.annotations.OpenAPIDefinition;
+import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
+import io.swagger.v3.oas.annotations.info.Info;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.security.SecurityScheme;
 import org.springdoc.core.models.GroupedOpenApi;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import io.swagger.v3.oas.annotations.OpenAPIDefinition;
-import io.swagger.v3.oas.annotations.info.Info;
-
 @Configuration
-@OpenAPIDefinition(info = @Info(title = "모의투자 투게더 API", version = "beta", description = "2차 프로젝트 API"))
+@OpenAPIDefinition(
+        info = @Info(title = "모의투자 투게더 API", version = "beta", description = "2차 프로젝트 API"),
+        security = @SecurityRequirement(name = "bearerAuth")
+)
+@SecurityScheme(
+        name = "bearerAuth",
+        type = SecuritySchemeType.HTTP,
+        scheme = "bearer",
+        bearerFormat = "JWT"
+)
 public class SpringDoc {
 
     @Bean
@@ -27,4 +38,11 @@ public class SpringDoc {
                 .build();
     }
 
+    @Bean
+    public GroupedOpenApi tradeApi() {
+        return GroupedOpenApi.builder()
+                .group("거래 API")
+                .pathsToMatch("/api/trades/**")
+                .build();
+    }
 }
