@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -26,7 +27,7 @@ public class UsersController {
 
     @PostMapping("/signup")
     @Operation(summary = "회원 가입")
-    public ResponseEntity<ApiRes<Void>> signup(@RequestBody SignupReq req) {
+    public ResponseEntity<ApiRes<Void>> signup(@RequestBody @Valid SignupReq req) {
 
         usersService.signup(req);
         return ResponseEntity.ok(
