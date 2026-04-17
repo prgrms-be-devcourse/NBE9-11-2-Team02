@@ -10,6 +10,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.back.together02be.global.exception.DuplicateRequestException;
 import com.back.together02be.global.idempotency.IdempotencyService;
 import com.back.together02be.trade.dto.BuyReq;
 import com.back.together02be.trade.dto.BuyRes;
@@ -103,7 +104,7 @@ class TradeServiceTest {
         assertThatNoException().isThrownBy(() -> tradeService.buy(1L, idempotencyKey, request));
 
         assertThatThrownBy(() -> tradeService.buy(1L, idempotencyKey, request))
-                .isInstanceOf(IllegalStateException.class)
+                .isInstanceOf(DuplicateRequestException.class)
                 .hasMessage("이미 처리된 요청입니다.");
     }
 

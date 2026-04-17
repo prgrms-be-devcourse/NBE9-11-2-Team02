@@ -8,6 +8,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.back.together02be.global.exception.DuplicateRequestException;
 import com.back.together02be.trade.dto.BuyRes;
 import com.back.together02be.trade.service.TradeService;
 import org.junit.jupiter.api.DisplayName;
@@ -107,10 +108,10 @@ class TradeControllerTest {
     }
 
     @Test
-    @DisplayName("중복 요청 — 400 + 멱등성 메시지")
+    @DisplayName("중복 요청 — 409 + 멱등성 메시지")
     void 중복_요청_차단() throws Exception {
         when(tradeService.buy(anyLong(), anyString(), any()))
-                .thenThrow(new IllegalStateException("이미 처리된 요청입니다."));
+                .thenThrow(new DuplicateRequestException("이미 처리된 요청입니다."));
 
         mockMvc.perform(post("/api/trades/buy")
                         .param("userId", "1")
@@ -122,7 +123,7 @@ class TradeControllerTest {
                                   "quantity": 10
                                 }
                                 """))
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.message").value("이미 처리된 요청입니다."));
     }
 }

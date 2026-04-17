@@ -1,5 +1,6 @@
 package com.back.together02be.trade.service;
 
+import com.back.together02be.global.exception.DuplicateRequestException;
 import com.back.together02be.global.idempotency.IdempotencyService;
 import com.back.together02be.trade.dto.BuyReq;
 import com.back.together02be.trade.dto.BuyRes;
@@ -23,7 +24,7 @@ public class TradeService {
      */
     public BuyRes buy(Long userId, String idempotencyKey, BuyReq request) {
         if (!idempotencyService.registerIfAbsent(idempotencyKey, userId)) {
-            throw new IllegalStateException("이미 처리된 요청입니다.");
+            throw new DuplicateRequestException("이미 처리된 요청입니다.");
         }
 
         try {
