@@ -27,4 +27,12 @@ public class SpringDoc {
                 .build();
     }
 
+    @Bean
+    public GroupedOpenApi assetApi() { // 예시
+        return GroupedOpenApi.builder()
+                .group("보유 자산 조회 API")
+                .pathsToMatch("/api/asset/stocks/**")
+                .build();
+    }
+
 }
