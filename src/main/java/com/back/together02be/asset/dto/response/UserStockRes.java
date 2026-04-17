@@ -6,14 +6,17 @@ public record UserStockRes(
         String stockCode,
         String stockName,
         Long quantity,
-        Long averagePrice
+        Long averagePrice,
+        Long currentPrice
 ) {
-    public static UserStockRes from(UserStock userStock) {
+    public static UserStockRes from(UserStock userStock,Long currentPrice) {
         return new UserStockRes(
                 userStock.getStock().getStockCode(),
                 userStock.getStock().getStockName(),
                 userStock.getQuantity(),
-                userStock.getAveragePrice()
+                userStock.getAveragePrice(),
+                currentPrice
+
         );
     }
 }
