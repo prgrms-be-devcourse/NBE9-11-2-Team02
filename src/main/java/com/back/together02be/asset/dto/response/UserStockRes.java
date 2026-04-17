@@ -1,6 +1,6 @@
 package com.back.together02be.asset.dto.response;
 
-import com.back.together02be.asset.enitity.UserStock;
+import com.back.together02be.asset.entity.UserStock;
 
 public record UserStockRes(
         String stockCode,
