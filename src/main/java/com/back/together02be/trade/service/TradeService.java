@@ -67,6 +67,7 @@ public class TradeService {
             throw new EntityNotFoundException("현재가 정보를 불러올 수 없습니다. 잠시 후 다시 시도해주세요.");
         }
         Long price = Long.parseLong(stockPrice.getPrice());
+
         //3. 수량 검증
         if(userStock.getQuantity()<req.quantity()){
             throw new IllegalArgumentException("보유 수량이 부족합니다.");
