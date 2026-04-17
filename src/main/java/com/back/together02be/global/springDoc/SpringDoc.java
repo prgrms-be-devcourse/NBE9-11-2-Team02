@@ -27,4 +27,12 @@ public class SpringDoc {
                 .build();
     }
 
+    @Bean
+    public GroupedOpenApi tradesApi() {
+        return GroupedOpenApi.builder()
+                .group("주식 거래 API")
+                .pathsToMatch("/api/trades/**")
+                .build();
+    }
+
 }
