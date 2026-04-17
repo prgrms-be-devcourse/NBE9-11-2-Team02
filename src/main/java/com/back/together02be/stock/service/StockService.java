@@ -4,6 +4,7 @@ package com.back.together02be.stock.service;
 import com.back.together02be.infra.kis.KisWebSocketClient;
 import com.back.together02be.stock.cache.StockPriceCache;
 import com.back.together02be.stock.client.KisPriceClient;
+import com.back.together02be.stock.dto.KisDailyPriceRes;
 import com.back.together02be.stock.dto.KisPriceRes;
 import com.back.together02be.stock.dto.RealtimeStockPrice;
 import com.back.together02be.stock.dto.StockListRes;
@@ -84,18 +85,26 @@ public class StockService {
         int index = currentIndex % stocks.size();
         Stock stock = stocks.get(index);
 
-            try {
-                KisPriceRes price = kisPriceClient.getCurrentPrice(token, stock.getStockCode());
+		try {
+			KisPriceRes price = kisPriceClient.getCurrentPrice(token, stock.getStockCode());
 
-                Long currentPrice = Long.parseLong(price.output().currentPrice());
-                Double changeRate = Double.parseDouble(price.output().changeRate());
+			Long currentPrice = Long.parseLong(price.output().currentPrice());
+			Double changeRate = Double.parseDouble(price.output().changeRate());
 
-                priceCache.put(stock.getStockCode(),
-                        new StockPriceCache(currentPrice, changeRate));
+			Long closePrice = null;
 
-            } catch (Exception e) {
-                System.out.println("가격 갱신 실패: " + stock.getStockCode() + " / " + e.getMessage());
-            }
+			if (currentPrice == 0) {
+				KisDailyPriceRes daily = kisPriceClient.getDailyPrice(token, stock.getStockCode());
+				closePrice = Long.parseLong(daily.output().closePrice());
+				currentPrice = closePrice;
+			}
+
+			priceCache.put(stock.getStockCode(),
+					new StockPriceCache(currentPrice, changeRate, closePrice));
+
+		} catch (Exception e) {
+			System.out.println("가격 갱신 실패: " + stock.getStockCode() + " / " + e.getMessage());
+		}
 
         // 다음 위치로 이동
         currentIndex = (currentIndex + 1) % stocks.size();

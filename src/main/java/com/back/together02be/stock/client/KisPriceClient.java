@@ -1,9 +1,9 @@
 package com.back.together02be.stock.client;
 
+import com.back.together02be.stock.dto.KisDailyPriceRes;
 import com.back.together02be.stock.dto.KisPriceRes;
 import com.back.together02be.stock.dto.KisTokenRes;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
@@ -87,6 +87,32 @@ public class KisPriceClient {
         //예외 처리
         if (response == null || response.output() == null) {
             throw new IllegalStateException("현재가 조회 실패: stockCode=" + stockCode);
+        }
+
+        return response;
+    }
+
+    public KisDailyPriceRes getDailyPrice(String token, String stockCode) {
+
+        String url = restBaseUrl + "/uapi/domestic-stock/v1/quotations/inquire-daily-price"
+                + "?fid_cond_mrkt_div_code=J"
+                + "&fid_input_iscd=" + stockCode
+                + "&fid_org_adj_prc=1"
+                + "&fid_period_div_code=D";
+
+        KisDailyPriceRes response = restClient.get()
+                .uri(url)
+                .headers(headers -> {
+                    headers.setBearerAuth(token);
+                    headers.set("appkey", appKey);
+                    headers.set("appsecret", appSecret);
+                    headers.set("tr_id", "FHKST01010400");
+                })
+                .retrieve()
+                .body(KisDailyPriceRes.class);
+
+        if (response == null || response.output() == null) {
+            throw new IllegalStateException("종가 조회 실패: stockCode=" + stockCode);
         }
 
         return response;
