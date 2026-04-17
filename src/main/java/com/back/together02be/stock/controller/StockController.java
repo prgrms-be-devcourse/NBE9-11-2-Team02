@@ -1,7 +1,7 @@
 package com.back.together02be.stock.controller;
 
 import com.back.together02be.global.apiRes.ApiRes;
-import com.back.together02be.stock.dto.StockListRes;
+import com.back.together02be.stock.dto.response.StockListRes;
 import com.back.together02be.stock.dto.response.StockPriceRes;
 import com.back.together02be.stock.service.StockService;
 import io.swagger.v3.oas.annotations.Operation;
