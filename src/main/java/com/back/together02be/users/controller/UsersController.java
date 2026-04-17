@@ -42,7 +42,7 @@ public class UsersController {
 
     @PostMapping("/login")
     @Operation(summary = "로그인")
-    public ResponseEntity<ApiRes<UsersRes>> login(@RequestBody LoginReq req) {
+    public ResponseEntity<ApiRes<UsersRes>> login(@RequestBody @Valid LoginReq req) {
 
         String[] tokens = usersService.login(req);
         return ResponseEntity.ok(
