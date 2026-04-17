@@ -4,9 +4,9 @@ package com.back.together02be.stock.service;
 import com.back.together02be.infra.kis.KisWebSocketClient;
 import com.back.together02be.stock.cache.StockPriceCache;
 import com.back.together02be.stock.client.KisPriceClient;
-import com.back.together02be.stock.dto.KisPriceRes;
+import com.back.together02be.stock.dto.response.KisPriceRes;
 import com.back.together02be.stock.dto.RealtimeStockPrice;
-import com.back.together02be.stock.dto.StockListRes;
+import com.back.together02be.stock.dto.response.StockListRes;
 import com.back.together02be.stock.dto.response.StockPriceRes;
 import com.back.together02be.stock.entity.Stock;
 import com.back.together02be.stock.repository.StockRepository;
@@ -42,6 +42,10 @@ public class StockService {
     private final Map<String, StockPriceCache> priceCache = new ConcurrentHashMap<>();
 
     private int currentIndex = 0;
+
+	public StockPriceCache getCachedStockPrice(String stockCode) {
+		return priceCache.get(stockCode);
+	}
 
     //캐시 읽는 메서드
     public List<StockListRes> getStocks() {
