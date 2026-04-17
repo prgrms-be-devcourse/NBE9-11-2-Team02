@@ -1,16 +1,17 @@
 package com.back.together02be.users.service;
 
+import com.back.together02be.asset.enitity.UserAccount;
+import com.back.together02be.asset.repository.UserAccountRepository;
 import com.back.together02be.global.util.JwtUtil;
 import com.back.together02be.users.dto.request.LoginReq;
-import com.back.together02be.users.dto.request.TokenReq;
 import com.back.together02be.users.dto.request.SignupReq;
+import com.back.together02be.users.dto.request.TokenReq;
 import com.back.together02be.users.entity.Users;
 import com.back.together02be.users.repository.UsersRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import lombok.RequiredArgsConstructor;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
@@ -22,7 +23,10 @@ import java.util.UUID;
 public class UsersService {
 
     private final UsersRepository usersRepository;
+    private final UserAccountRepository userAccountRepository;
     private final PasswordEncoder passwordEncoder;
+
+    private static final long INITIAL_DEPOSIT = 50_000_000L;
 
     @Value("${jwt.secret}")
     private String jwtSecret;
@@ -52,6 +56,7 @@ public class UsersService {
         );
 
         usersRepository.save(user);
+        userAccountRepository.save(new UserAccount(user, 0L, INITIAL_DEPOSIT));
     }
 
     public long count() {
