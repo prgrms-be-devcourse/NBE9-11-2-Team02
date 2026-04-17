@@ -43,6 +43,9 @@ public class BaseInitData {
 
     @Transactional
     public void work1() {
+        if (stockRepository.existsByStockCode("005930")) {
+            return;
+        }
         // 테스트용 시드 데이터 (H2 dev 환경 전용)
         Users user = usersRepository.save(new Users("testuser", "password", "테스트유저"));
         stockRepository.save(new Stock("005930", "삼성전자", "KOSPI"));
