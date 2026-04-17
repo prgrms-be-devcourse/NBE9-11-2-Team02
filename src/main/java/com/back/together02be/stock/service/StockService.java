@@ -43,6 +43,10 @@ public class StockService {
 
     private int currentIndex = 0;
 
+	public StockPriceCache getCachedStockPrice(String stockCode) {
+		return priceCache.get(stockCode);
+	}
+
     //캐시 읽는 메서드
     public List<StockListRes> getStocks() {
         List<StockListRes> result = new ArrayList<>();
