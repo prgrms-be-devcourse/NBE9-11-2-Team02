@@ -46,19 +46,19 @@ public class TradeBuyProcessor {
         Long price = Long.parseLong(stockPrice.getPrice());
         long amount = price * request.quantity();
 
-        // 3. 계좌 조회 및 잔고 검증
-        UserAccount account = userAccountRepository.findByUsersId(userId)
-                .orElseThrow(() -> new EntityNotFoundException("계좌 정보가 없습니다."));
-
-        if (account.getDeposit() < amount) {
+        // 3. 원자적 잔고 차감 — 잔고 확인과 차감을 DB 단에서 한 번에 처리
+        int updated = userAccountRepository.decreaseDepositIfSufficient(userId, amount);
+        if (updated == 0) {
+            UserAccount accountForMsg = userAccountRepository.findByUsersId(userId)
+                    .orElseThrow(() -> new EntityNotFoundException("계좌 정보가 없습니다."));
             throw new IllegalStateException(
-                    String.format("잔고가 부족합니다. (필요: %,d원 / 보유: %,d원)", amount, account.getDeposit())
+                    String.format("잔고가 부족합니다. (필요: %,d원 / 보유: %,d원)", amount, accountForMsg.getDeposit())
             );
         }
 
-        // 4. 잔고 차감 및 누적 매수금액 증가
-        account.decreaseDeposit(amount);
-        account.increaseTotalPurchase(amount);
+        // 4. 계좌 조회 + 비관적 락 — 이후 UserStock 처리 구간을 직렬화
+        UserAccount account = userAccountRepository.findByUsersIdWithLock(userId)
+                .orElseThrow(() -> new EntityNotFoundException("계좌 정보가 없습니다."));
 
         // 5. 보유 주식 업데이트 — 신규/추가 매수에 따라 분기
         UserStock userStock = userStockRepository
