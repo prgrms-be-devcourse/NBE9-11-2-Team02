@@ -49,8 +49,9 @@ public class BaseInitData {
     public void work1() {
         // 테스트용 시드 데이터 (H2 dev 환경 전용)
         Users user = usersRepository.save(new Users("testuser", "password", "테스트유저"));
-        Stock stock = stockRepository.save(new Stock("005930", "삼성전자", "KOSPI"));
+        //Stock stock = stockRepository.save(new Stock("005930", "삼성전자", "KOSPI"));
         userAccountRepository.save(new UserAccount(user, 0L, 50_000_000L));
+
     }
 
     @Transactional
@@ -62,6 +63,9 @@ public class BaseInitData {
         usersService.signup(new SignupReq("user1", "1234", "1234", "유저1"));
         usersService.signup(new SignupReq("user2", "1234", "1234", "유저2"));
         usersService.signup(new SignupReq("user3", "1234", "1234", "유저3"));
+        Users user = usersRepository.findByUsername("user1")
+                .orElseGet(() -> usersRepository.save(new Users("user1", "1234", "유저1")));
+        userAccountRepository.save(new UserAccount(user, 0L, 50_000_000L));
     }
 
     @Transactional
