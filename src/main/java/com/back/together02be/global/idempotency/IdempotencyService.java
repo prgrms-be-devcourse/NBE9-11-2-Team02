@@ -2,7 +2,6 @@ package com.back.together02be.global.idempotency;
 
 import java.time.LocalDateTime;
 
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -27,12 +26,11 @@ public class IdempotencyService {
 	 */
 	@Transactional(propagation = Propagation.REQUIRES_NEW)
 	public boolean registerIfAbsent(String key, Long userId) {
-		try {
-			idempotencyKeyRepository.save(new IdempotencyKey(key, userId));
-			return true;
-		} catch (DataIntegrityViolationException e) {
+		if (idempotencyKeyRepository.existsByIdempotencyKey(key)) {
 			return false;
 		}
+		idempotencyKeyRepository.save(new IdempotencyKey(key, userId));
+		return true;
 	}
 
 	/**
