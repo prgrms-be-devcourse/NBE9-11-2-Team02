@@ -3,6 +3,7 @@ package com.back.together02be.trade.processor;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -59,8 +60,13 @@ class TradeBuyProcessorTest {
         stock = new Stock("005930", "삼성전자", "KOSPI");
         account = new UserAccount(user, 0L, 50_000_000L);
 
+        ReflectionTestUtils.setField(stock, "id", 1L);
+
         lenient().when(stockRepository.findById(1L)).thenReturn(Optional.of(stock));
-        lenient().when(userAccountRepository.findByUsersId(1L)).thenReturn(Optional.of(account));
+        // 잔고 차감 성공 기본값 (1 = 1행 업데이트됨)
+        lenient().when(userAccountRepository.decreaseDepositIfSufficient(anyLong(), anyLong())).thenReturn(1);
+        // 비관적 락 조회
+        lenient().when(userAccountRepository.findByUsersIdWithLock(1L)).thenReturn(Optional.of(account));
         lenient().when(tradeRepository.save(any(Trade.class))).thenAnswer(invocation -> {
             Trade trade = invocation.getArgument(0);
             ReflectionTestUtils.setField(trade, "id", 1L);
@@ -76,7 +82,7 @@ class TradeBuyProcessorTest {
     }
 
     @Test
-    @DisplayName("정상 매수 (신규 보유종목) — 잔고 차감, 거래 내역 저장")
+    @DisplayName("정상 매수 (신규 보유종목) — 잔고 차감 쿼리 호출, 거래 내역·UserStock 저장")
     void 정상_매수_신규_보유종목() {
         // given
         long price = 70_000L;
@@ -90,13 +96,12 @@ class TradeBuyProcessorTest {
         BuyRes response = tradeBuyProcessor.processBuy(1L, new BuyReq(1L, quantity));
 
         // then
-        assertThat(account.getDeposit()).isEqualTo(50_000_000L - amount);
-        assertThat(account.getTotalPurchase()).isEqualTo(amount);
         assertThat(response.price()).isEqualTo(price);
         assertThat(response.quantity()).isEqualTo(quantity);
         assertThat(response.amount()).isEqualTo(amount);
-        assertThat(response.remainingDeposit()).isEqualTo(50_000_000L - amount);
 
+        // @Modifying으로 잔고 차감 쿼리가 호출됐는지 검증
+        verify(userAccountRepository).decreaseDepositIfSufficient(1L, amount);
         verify(userStockRepository).save(any(UserStock.class));
         verify(tradeRepository).save(any(Trade.class));
     }
@@ -127,13 +132,19 @@ class TradeBuyProcessorTest {
     }
 
     @Test
-    @DisplayName("잔고 부족 — 예외 발생")
+    @DisplayName("잔고 부족 — @Modifying이 0 반환 시 예외 발생")
     void 잔고_부족_예외() {
-        // given: 필요금액 7,000만원 > 잔고 5,000만원
-        when(stockPriceStore.get("005930")).thenReturn(mockPrice("005930", 70_000L));
+        // given
+        long price = 70_000L;
+        long quantity = 1_000L;
+        long amount = price * quantity; // 7,000만원 > 잔고 5,000만원
+
+        when(stockPriceStore.get("005930")).thenReturn(mockPrice("005930", price));
+        when(userAccountRepository.decreaseDepositIfSufficient(1L, amount)).thenReturn(0); // 잔고 부족
+        when(userAccountRepository.findByUsersId(1L)).thenReturn(Optional.of(account));   // 에러 메시지용
 
         // when & then
-        assertThatThrownBy(() -> tradeBuyProcessor.processBuy(1L, new BuyReq(1L, 1_000L)))
+        assertThatThrownBy(() -> tradeBuyProcessor.processBuy(1L, new BuyReq(1L, quantity)))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("잔고가 부족합니다");
     }
@@ -149,5 +160,4 @@ class TradeBuyProcessorTest {
                 .isInstanceOf(EntityNotFoundException.class)
                 .hasMessageContaining("현재가 정보");
     }
-
 }
