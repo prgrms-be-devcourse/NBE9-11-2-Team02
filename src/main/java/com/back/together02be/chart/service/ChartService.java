@@ -31,7 +31,7 @@ public class ChartService {
 
 		ChartPeriod period = ChartPeriod.from(periodValue);
 
-		log.debug("종목 차트 캐시 미스 → KIS API 호출 - stockCode={}, period={}", stockCode, periodValue);
+		log.info("종목 차트 캐시 미스 → KIS API 호출 - stockCode={}, period={}", stockCode, periodValue);
 		KisChartApiRes response = kisPriceClient.fetchCandles(stockCode, period);
 
 		List<Candle> candles = response.output2().stream()
