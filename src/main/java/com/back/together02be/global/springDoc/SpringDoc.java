@@ -45,4 +45,12 @@ public class SpringDoc {
                 .pathsToMatch("/api/trades/**")
                 .build();
     }
+
+    @Bean
+    public GroupedOpenApi assetApi() {
+        return GroupedOpenApi.builder()
+                .group("보유 자산 조회 API")
+                .pathsToMatch("/api/asset/stocks/**")
+                .build();
+    }
 }
