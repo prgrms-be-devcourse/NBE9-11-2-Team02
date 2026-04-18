@@ -5,7 +5,7 @@ import com.back.together02be.asset.repository.UserAccountRepository;
 import com.back.together02be.global.util.JwtUtil;
 import com.back.together02be.users.dto.request.LoginReq;
 import com.back.together02be.users.dto.request.SignupReq;
-import com.back.together02be.users.dto.request.TokenReq;
+
 import com.back.together02be.users.entity.Users;
 import com.back.together02be.users.repository.UsersRepository;
 import lombok.RequiredArgsConstructor;
@@ -94,10 +94,10 @@ public class UsersService {
     }
 
     @Transactional
-    public void logout(TokenReq req) {
+    public void logout(String refreshToken) {
 
         Users user = usersRepository
-                .findByRefreshToken(req.refreshToken())
+                .findByRefreshToken(refreshToken)
                 .orElseThrow(
                         () -> new IllegalArgumentException("유효하지 않은 리프레시 토큰입니다.")
                 );
@@ -106,10 +106,10 @@ public class UsersService {
     }
 
     @Transactional
-    public String[] reissueToken(TokenReq req) {
+    public String[] reissueToken(String refreshToken) {
 
         Users user = usersRepository
-                .findByRefreshToken(req.refreshToken())
+                .findByRefreshToken(refreshToken)
                 .orElseThrow(
                         () -> new IllegalArgumentException("유효하지 않은 리프레시 토큰입니다.")
                 );
