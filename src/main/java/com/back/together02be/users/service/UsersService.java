@@ -1,6 +1,6 @@
 package com.back.together02be.users.service;
 
-import com.back.together02be.asset.enitity.UserAccount;
+import com.back.together02be.asset.entity.UserAccount;
 import com.back.together02be.asset.repository.UserAccountRepository;
 import com.back.together02be.global.util.JwtUtil;
 import com.back.together02be.users.dto.request.LoginReq;
