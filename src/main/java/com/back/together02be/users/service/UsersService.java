@@ -7,6 +7,7 @@ import com.back.together02be.users.dto.request.SignupReq;
 import com.back.together02be.users.entity.Users;
 import com.back.together02be.users.repository.UsersRepository;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
@@ -21,6 +22,7 @@ import java.util.UUID;
 public class UsersService {
 
     private final UsersRepository usersRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Value("${jwt.secret}")
     private String jwtSecret;
@@ -43,7 +45,12 @@ public class UsersService {
         }
 
         // db에 [회원가입 한 user] 저장
-        Users user = new Users(req.username(), req.password(), req.nickname());
+        Users user = new Users(
+                req.username(),
+                passwordEncoder.encode(req.password()),
+                req.nickname()
+        );
+
         usersRepository.save(user);
     }
 

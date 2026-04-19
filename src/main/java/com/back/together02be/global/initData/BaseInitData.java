@@ -1,8 +1,9 @@
 package com.back.together02be.global.initData;
 
-import com.back.together02be.asset.enitity.UserAccount;
+import com.back.together02be.asset.entity.UserAccount;
 import com.back.together02be.asset.repository.UserAccountRepository;
 import com.back.together02be.stock.entity.Stock;
+import com.back.together02be.stock.entity.StockMarket;
 import com.back.together02be.stock.repository.StockRepository;
 import com.back.together02be.users.dto.request.SignupReq;
 import com.back.together02be.users.entity.Users;
@@ -16,7 +17,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.transaction.annotation.Transactional;
-
 
 @Configuration
 @RequiredArgsConstructor
@@ -38,6 +38,7 @@ public class BaseInitData {
         return args -> {
             self.work1();
             self.work2();
+            self.work3();
         };
     }
 
@@ -48,7 +49,6 @@ public class BaseInitData {
         }
         // 테스트용 시드 데이터 (H2 dev 환경 전용)
         Users user = usersRepository.save(new Users("testuser", "password", "테스트유저"));
-        stockRepository.save(new Stock("005930", "삼성전자", "KOSPI"));
         userAccountRepository.save(new UserAccount(user, 0L, 50_000_000L));
     }
 
@@ -61,6 +61,34 @@ public class BaseInitData {
         usersService.signup(new SignupReq("user1", "1234", "1234", "유저1"));
         usersService.signup(new SignupReq("user2", "1234", "1234", "유저2"));
         usersService.signup(new SignupReq("user3", "1234", "1234", "유저3"));
+    }
+
+    @Transactional
+    public void work3() {
+        if (stockRepository.count() > 0) {
+            return;
+        }
+
+        stockRepository.save(new Stock("005930", "삼성전자", StockMarket.KOSPI));
+        stockRepository.save(new Stock("000660", "SK하이닉스", StockMarket.KOSPI));
+        stockRepository.save(new Stock("035420", "NAVER", StockMarket.KOSPI));
+        stockRepository.save(new Stock("035720", "카카오", StockMarket.KOSPI));
+        stockRepository.save(new Stock("068270", "셀트리온", StockMarket.KOSPI));
+        stockRepository.save(new Stock("005380", "현대차", StockMarket.KOSPI));
+        stockRepository.save(new Stock("012330", "현대모비스", StockMarket.KOSPI));
+        stockRepository.save(new Stock("105560", "KB금융", StockMarket.KOSPI));
+        stockRepository.save(new Stock("055550", "신한지주", StockMarket.KOSPI));
+        stockRepository.save(new Stock("034730", "SK", StockMarket.KOSPI));
+        stockRepository.save(new Stock("066570", "LG전자", StockMarket.KOSPI));
+        stockRepository.save(new Stock("003670", "포스코퓨처엠", StockMarket.KOSPI));
+        stockRepository.save(new Stock("096770", "SK이노베이션", StockMarket.KOSPI));
+        stockRepository.save(new Stock("015760", "한국전력", StockMarket.KOSPI));
+        stockRepository.save(new Stock("032830", "삼성생명", StockMarket.KOSPI));
+        stockRepository.save(new Stock("086790", "하나금융지주", StockMarket.KOSPI));
+        stockRepository.save(new Stock("051910", "LG화학", StockMarket.KOSPI));
+        stockRepository.save(new Stock("006400", "삼성SDI", StockMarket.KOSPI));
+        stockRepository.save(new Stock("207940", "삼성바이오로직스", StockMarket.KOSPI));
+        stockRepository.save(new Stock("373220", "LG에너지솔루션", StockMarket.KOSPI));
     }
 
 }

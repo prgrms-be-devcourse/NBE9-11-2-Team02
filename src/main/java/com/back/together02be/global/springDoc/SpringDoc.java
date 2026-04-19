@@ -28,6 +28,14 @@ public class SpringDoc {
     }
 
     @Bean
+    public GroupedOpenApi assetApi() { // 예시
+        return GroupedOpenApi.builder()
+                .group("보유 자산 조회 API")
+                .pathsToMatch("/api/asset/stocks/**")
+                .build();
+    }
+
+    @Bean
     public GroupedOpenApi tradesApi() {
         return GroupedOpenApi.builder()
                 .group("주식 거래 API")

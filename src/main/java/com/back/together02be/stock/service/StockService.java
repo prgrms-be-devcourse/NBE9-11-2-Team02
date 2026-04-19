@@ -1,33 +1,30 @@
 package com.back.together02be.stock.service;
 
-import com.back.together02be.stock.cache.StockPriceCache;
-import com.back.together02be.stock.client.KisPriceClient;
-import com.back.together02be.stock.dto.KisPriceRes;
-import com.back.together02be.stock.dto.StockListRes;
-import com.back.together02be.stock.entity.Stock;
-import com.back.together02be.stock.repository.StockRepository;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Service;
-import java.io.IOException;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-
-import org.springframework.stereotype.Service;
-import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import com.back.together02be.infra.kis.KisWebSocketClient;
+import com.back.together02be.stock.cache.StockPriceCache;
+import com.back.together02be.stock.client.KisPriceClient;
+import com.back.together02be.stock.dto.response.KisPriceRes;
 import com.back.together02be.stock.dto.RealtimeStockPrice;
+import com.back.together02be.stock.dto.response.StockListRes;
+import com.back.together02be.stock.dto.response.StockPriceRes;
+import com.back.together02be.stock.entity.Stock;
 import com.back.together02be.stock.repository.StockRepository;
-
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Service;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
@@ -45,6 +42,10 @@ public class StockService {
     private final Map<String, StockPriceCache> priceCache = new ConcurrentHashMap<>();
 
     private int currentIndex = 0;
+
+	public StockPriceCache getCachedStockPrice(String stockCode) {
+		return priceCache.get(stockCode);
+	}
 
     //캐시 읽는 메서드
     public List<StockListRes> getStocks() {
@@ -65,7 +66,6 @@ public class StockService {
                     stock.getId(),
                     stock.getStockCode(),
                     stock.getStockName(),
-                    stock.getMarket(),
                     currentPrice,
                     changeRate
             ));
@@ -108,8 +108,7 @@ public class StockService {
 
 	public SseEmitter createSseEmitter(String stockCode) {
 
-		stockRepository.findByStockCode(stockCode)
-			.orElseThrow(() -> new EntityNotFoundException("존재하지 않는 종목코드입니다: " + stockCode));
+		findStock(stockCode);
 
 		int count = rtStockPriceStore.addSubscriber(stockCode); // 구독자 추가
 
@@ -156,5 +155,14 @@ public class StockService {
 		});
 
 		return emitter;
+	}
+
+	public StockPriceRes getStockPrice(String stockCode) {
+		return StockPriceRes.from(findStock(stockCode));
+	}
+
+	private Stock findStock(String stockCode) {
+		return stockRepository.findByStockCode(stockCode)
+			.orElseThrow(() -> new EntityNotFoundException("존재하지 않는 종목코드입니다: " + stockCode));
 	}
 }
