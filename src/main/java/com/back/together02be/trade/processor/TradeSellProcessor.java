@@ -48,7 +48,9 @@ public class TradeSellProcessor {
         Long price = Long.parseLong(stockPrice.getPrice());
 
         // 3. 수량 검증
-        if (userStock.getQuantity() < request.quantity()) {
+        int updatedRows = userStockRepository.updateQuantity(userId, request.stockId(), request.quantity());
+
+        if (updatedRows == 0) {
             throw new IllegalStateException("보유 수량이 부족합니다.");
         }
 

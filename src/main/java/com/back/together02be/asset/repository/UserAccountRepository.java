@@ -17,7 +17,7 @@ public interface UserAccountRepository extends JpaRepository<UserAccount, Long> 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @QueryHints(@QueryHint(
             name = "jakarta.persistence.lock.timeout",
-            value = "3000" //타임아웃 3초
+            value = "500" //타임아웃 0.5초
     ))
     @Query("SELECT ua FROM UserAccount ua WHERE ua.users.id = :usersId")
     Optional<UserAccount> findByUsersIdWithLock(@Param("usersId") Long usersId);
