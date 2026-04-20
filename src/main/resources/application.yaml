@@ -6,6 +6,12 @@ spring:
     active: local
     include: secret
 
+  cache:
+    type: caffeine
+    cache-names: chart
+    caffeine:
+      spec: maximumSize=60,expireAfterWrite=24h # 모의투자 종목 20개 × 기간 2개(3M, 1Y) = 최대 40개 넉넉히 60개
+
   datasource:
     url: jdbc:h2:mem:db_dev;MODE=MySQL
     username: sa
@@ -23,7 +29,7 @@ spring:
         highlight_sql: true
         use_sql_comments: true
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: create
     show-sql: true
     defer-datasource-initialization: true
 
@@ -36,6 +42,6 @@ springdoc:
 
 logging:
   level:
-    org.hibernate.orm.jdbc.bind: TRACE
-    org.hibernate.orm.jdbc.extract: TRACE
-    org.springframework.transaction.interceptor: TRACE
+    org.hibernate.orm.jdbc.bind: INFO
+    org.hibernate.orm.jdbc.extract: INFO
+    org.springframework.transaction.interceptor: INFO
