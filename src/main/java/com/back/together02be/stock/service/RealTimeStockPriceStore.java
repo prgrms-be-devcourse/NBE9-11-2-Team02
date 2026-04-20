@@ -21,6 +21,11 @@ public class RealTimeStockPriceStore {
 		priceMap.put(stockCode, stockPrice);
 	}
 
+	// REST 시딩
+	public void putIfAbsent(String stockCode, RealtimeStockPrice price) {
+		priceMap.putIfAbsent(stockCode, price);
+	}
+
 	// 실시간 시세 꺼내기
 	public RealtimeStockPrice get(String stockCode) {
 		return priceMap.get(stockCode);

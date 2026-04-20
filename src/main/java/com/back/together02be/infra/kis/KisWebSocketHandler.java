@@ -1,5 +1,8 @@
 package com.back.together02be.infra.kis;
 
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+
 import org.java_websocket.WebSocket;
 import org.springframework.stereotype.Component;
 
@@ -18,6 +21,8 @@ public class KisWebSocketHandler {
 	private final RealTimeStockPriceStore rtStockPriceStore;
 
 	private String approvalKey;
+
+	private final Set<String> subscribedStocks = ConcurrentHashMap.newKeySet();
 
 	public void setApprovalKey(String approvalKey) {
 		this.approvalKey = approvalKey;

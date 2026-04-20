@@ -9,14 +9,12 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import com.back.together02be.infra.kis.KisWebSocketClient;
 import com.back.together02be.stock.cache.StockPriceCache;
 import com.back.together02be.stock.client.KisPriceClient;
-import com.back.together02be.stock.dto.response.KisPriceRes;
 import com.back.together02be.stock.dto.RealtimeStockPrice;
 import com.back.together02be.stock.dto.response.StockListRes;
 import com.back.together02be.stock.dto.response.StockPriceRes;
@@ -41,8 +39,6 @@ public class StockService {
 
 	// REST 전체 종목 조회용 캐시
 	private final Map<String, StockPriceCache> priceCache = new ConcurrentHashMap<>();
-
-	private int currentIndex = 0;
 
 	//캐시 읽는 메서드
 	public StockPriceCache getCachedStockPrice(String stockCode) {
@@ -75,39 +71,6 @@ public class StockService {
 
 		return result;
 	}
-
-	//스케줄러 메서드
-	@Scheduled(fixedDelay = 1000) // 1초마다
-	public void updatePriceCache() {
-
-		List<Stock> stocks = stockRepository.findAll();
-
-		if (stocks.isEmpty())
-			return;
-
-		String token = kisPriceClient.getAccessToken();
-
-		// 한투 OpenAPI 호출 제한 때문에 전체 종목을 한 번에 갱신하지 않고 순차 갱신
-		int index = currentIndex % stocks.size();
-		Stock stock = stocks.get(index);
-
-		try {
-			KisPriceRes price = kisPriceClient.getCurrentPrice(token, stock.getStockCode());
-
-			Long currentPrice = Long.parseLong(price.output().currentPrice());
-			Double changeRate = Double.parseDouble(price.output().changeRate());
-
-			priceCache.put(stock.getStockCode(),
-				new StockPriceCache(currentPrice, changeRate));
-
-		} catch (Exception e) {
-			System.out.println("가격 갱신 실패: " + stock.getStockCode() + " / " + e.getMessage());
-		}
-
-		// 다음 위치로 이동
-		currentIndex = (currentIndex + 1) % stocks.size();
-	}
-
 
 	public SseEmitter createSseEmitter(String stockCode) {
 
