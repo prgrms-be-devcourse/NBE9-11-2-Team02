@@ -7,13 +7,11 @@ import org.springframework.stereotype.Service;
 import com.back.together02be.asset.dto.response.StockInfoRes;
 import com.back.together02be.asset.entity.UserStock;
 import com.back.together02be.asset.repository.UserAccountRepository;
-import com.back.together02be.asset.repository.UserStockRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
+
 
 import java.util.List;
 
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
