@@ -5,6 +5,11 @@ import com.back.together02be.asset.service.AssetService;
 import com.back.together02be.global.apiRes.ApiRes;
 import com.back.together02be.global.security.SecurityUser;
 import io.swagger.v3.oas.annotations.Operation;
+
+import com.back.together02be.asset.dto.response.StockInfoRes;
+import com.back.together02be.asset.dto.response.TotalPurchaseRes;
+import com.back.together02be.users.service.UsersService;
+import org.springframework.web.bind.annotation.*;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -22,11 +27,26 @@ import java.util.List;
 public class AssetController {
 
     private final AssetService assetService;
+    private final UsersService usersService;
 
     @GetMapping("/stocks")
     @Operation(summary = "보유 종목 조회")
     public ResponseEntity<ApiRes<List<UserStockRes>>> getUserStocks(@AuthenticationPrincipal SecurityUser user) {
         List<UserStockRes> userStocks = assetService.getUserStocks(user.getId());
         return ResponseEntity.ok(new ApiRes<>("보유 종목 조회 성공", userStocks));
+    }
+
+    @GetMapping("/accounts/{userId}")
+    @Operation(summary = "총 매수금 조회")
+    public ApiRes<TotalPurchaseRes> totalPrice(@PathVariable long userId){
+        //인증된 사용자 정보 가져오기
+        //총매수액 가져오기
+        long totalPurchase = assetService.getTotalAmountByUserId(userId);
+        List<StockInfoRes> stockInfos = assetService.getStockInfo(userId);
+
+        return new ApiRes<>(
+                "조회가 완료되었습니다.",
+                new TotalPurchaseRes(totalPurchase,stockInfos)
+        );
     }
 }

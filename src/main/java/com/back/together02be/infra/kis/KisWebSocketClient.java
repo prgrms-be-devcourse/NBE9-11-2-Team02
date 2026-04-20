@@ -1,16 +1,14 @@
 package com.back.together02be.infra.kis;
 
-import java.net.URI;
-
+import com.back.together02be.infra.kis.config.KisProperties;
+import jakarta.annotation.PostConstruct;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
 import org.springframework.stereotype.Component;
 
-import com.back.together02be.infra.kis.config.KisProperties;
-
-import jakarta.annotation.PostConstruct;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.net.URI;
 
 @Slf4j
 @Component
