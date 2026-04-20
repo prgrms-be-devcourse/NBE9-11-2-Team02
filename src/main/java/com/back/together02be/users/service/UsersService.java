@@ -1,16 +1,17 @@
 package com.back.together02be.users.service;
 
+import com.back.together02be.asset.entity.UserAccount;
+import com.back.together02be.asset.repository.UserAccountRepository;
 import com.back.together02be.global.util.JwtUtil;
 import com.back.together02be.users.dto.request.LoginReq;
-import com.back.together02be.users.dto.request.TokenReq;
 import com.back.together02be.users.dto.request.SignupReq;
+
 import com.back.together02be.users.entity.Users;
 import com.back.together02be.users.repository.UsersRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import lombok.RequiredArgsConstructor;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
@@ -22,7 +23,10 @@ import java.util.UUID;
 public class UsersService {
 
     private final UsersRepository usersRepository;
+    private final UserAccountRepository userAccountRepository;
     private final PasswordEncoder passwordEncoder;
+
+    private static final long INITIAL_DEPOSIT = 50_000_000L;
 
     @Value("${jwt.secret}")
     private String jwtSecret;
@@ -52,6 +56,7 @@ public class UsersService {
         );
 
         usersRepository.save(user);
+        userAccountRepository.save(new UserAccount(user, 0L, INITIAL_DEPOSIT));
     }
 
     public long count() {
@@ -64,11 +69,11 @@ public class UsersService {
         Users user = usersRepository
                 .findByUsername(req.username())
                 .orElseThrow(
-                        () -> new IllegalArgumentException("존재하지 않는 아이디입니다.")
+                        () -> new IllegalArgumentException("아이디 또는 비밀번호가 올바르지 않습니다.")
                 );
 
-        if (!req.password().equals(user.getPassword())) {
-            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
+        if (!passwordEncoder.matches(req.password(), user.getPassword())) {
+            throw new IllegalArgumentException("아이디 또는 비밀번호가 올바르지 않습니다.");
         }
 
         // AccessToken 발급
@@ -89,10 +94,10 @@ public class UsersService {
     }
 
     @Transactional
-    public void logout(TokenReq req) {
+    public void logout(String refreshToken) {
 
         Users user = usersRepository
-                .findByRefreshToken(req.refreshToken())
+                .findByRefreshToken(refreshToken)
                 .orElseThrow(
                         () -> new IllegalArgumentException("유효하지 않은 리프레시 토큰입니다.")
                 );
@@ -101,10 +106,10 @@ public class UsersService {
     }
 
     @Transactional
-    public String[] reissueToken(TokenReq req) {
+    public String[] reissueToken(String refreshToken) {
 
         Users user = usersRepository
-                .findByRefreshToken(req.refreshToken())
+                .findByRefreshToken(refreshToken)
                 .orElseThrow(
                         () -> new IllegalArgumentException("유효하지 않은 리프레시 토큰입니다.")
                 );
