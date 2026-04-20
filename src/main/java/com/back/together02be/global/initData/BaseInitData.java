@@ -16,6 +16,7 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 
 @Configuration
@@ -26,6 +27,7 @@ public class BaseInitData {
     private final UsersRepository usersRepository;
     private final StockRepository stockRepository;
     private final UserAccountRepository userAccountRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Autowired
     @Lazy
@@ -45,19 +47,19 @@ public class BaseInitData {
     @Transactional
     public void work1() {
         // 테스트용 시드 데이터 (H2 dev 환경 전용)
-        Users user = usersRepository.save(new Users("testuser", "password", "테스트유저"));
+        Users user = usersRepository.save(new Users("testuser", passwordEncoder.encode("password1234"), "테스트유저"));
         userAccountRepository.save(new UserAccount(user, 0L, 50_000_000L));
     }
 
     @Transactional
     public void work2() {
-		if (usersService.count() > 0) {
-			return;
-		}
+        if (usersService.count() > 0) {
+            return;
+        }
 
-        usersService.signup(new SignupReq("user1", "1234", "1234", "유저1"));
-        usersService.signup(new SignupReq("user2", "1234", "1234", "유저2"));
-        usersService.signup(new SignupReq("user3", "1234", "1234", "유저3"));
+        usersService.signup(new SignupReq("user1", "password01", "password01", "유저1"));
+        usersService.signup(new SignupReq("user2", "password02", "password02", "유저2"));
+        usersService.signup(new SignupReq("user3", "password03", "password03", "유저3"));
     }
 
     @Transactional
