@@ -1,4 +1,4 @@
-package com.back.together02be.trade.enitity;
+package com.back.together02be.trade.entity;
 
 import java.time.LocalDateTime;
 

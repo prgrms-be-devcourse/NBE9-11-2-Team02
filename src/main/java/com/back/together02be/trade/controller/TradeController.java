@@ -4,6 +4,8 @@ import com.back.together02be.global.apiRes.ApiRes;
 import com.back.together02be.global.security.SecurityUser;
 import com.back.together02be.trade.dto.BuyReq;
 import com.back.together02be.trade.dto.BuyRes;
+import com.back.together02be.trade.dto.request.TradeSellReq;
+import com.back.together02be.trade.dto.response.TradeSellRes;
 import com.back.together02be.trade.service.TradeService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -32,5 +34,18 @@ public class TradeController {
     ) {
         BuyRes response = tradeService.buy(user.getId(), idempotencyKey, request);
         return ResponseEntity.ok(new ApiRes<>("매수가 완료되었습니다.", response));
+    }
+
+    //주식 매도
+    @Operation(summary = "주식 매도", description = "실시간 현재가 기준으로 매도를 처리합니다. X-Idempotency-Key 헤더 필수.")
+    @PostMapping("/sell")
+    public ResponseEntity<ApiRes<TradeSellRes>> sell(
+            @Parameter(description = "중복 요청 방지용 UUID (버튼 클릭마다 새로 생성)", required = true)
+            @RequestHeader("X-Idempotency-Key") String idempotencyKey,
+            @RequestParam Long userId, // TODO: Security 적용 후 제거
+            @RequestBody @Valid TradeSellReq req
+    ){
+        TradeSellRes res = tradeService.sell(userId,idempotencyKey,req);
+        return ResponseEntity.ok(new ApiRes<>("매수가 완료되었습니다.", res));
     }
 }
