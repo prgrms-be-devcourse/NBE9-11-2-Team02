@@ -16,9 +16,9 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import com.back.together02be.infra.kis.KisWebSocketClient;
 import com.back.together02be.stock.cache.StockPriceCache;
 import com.back.together02be.stock.client.KisPriceClient;
-import com.back.together02be.stock.dto.KisPriceRes;
+import com.back.together02be.stock.dto.response.KisPriceRes;
 import com.back.together02be.stock.dto.RealtimeStockPrice;
-import com.back.together02be.stock.dto.StockListRes;
+import com.back.together02be.stock.dto.response.StockListRes;
 import com.back.together02be.stock.dto.response.StockPriceRes;
 import com.back.together02be.stock.entity.Stock;
 import com.back.together02be.stock.repository.StockRepository;
@@ -45,8 +45,13 @@ public class StockService {
 	private int currentIndex = 0;
 
 	//캐시 읽는 메서드
-	public List<StockListRes> getStocks() {
-		List<StockListRes> result = new ArrayList<>();
+	public StockPriceCache getCachedStockPrice(String stockCode) {
+		return priceCache.get(stockCode);
+	}
+
+    //캐시 읽는 메서드
+    public List<StockListRes> getStocks() {
+        List<StockListRes> result = new ArrayList<>();
 
 		for (Stock stock : stockRepository.findAll()) {
 			StockPriceCache cached = priceCache.get(stock.getStockCode());

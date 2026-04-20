@@ -1,4 +1,4 @@
-package com.back.together02be.stock.dto;
+package com.back.together02be.stock.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

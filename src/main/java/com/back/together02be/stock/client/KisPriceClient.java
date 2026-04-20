@@ -4,6 +4,8 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
 
+import com.back.together02be.stock.dto.response.KisPriceRes;
+import com.back.together02be.stock.dto.response.KisTokenRes;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
@@ -12,8 +14,6 @@ import org.springframework.web.client.RestClient;
 
 import com.back.together02be.chart.constant.ChartPeriod;
 import com.back.together02be.chart.dto.response.KisChartApiRes;
-import com.back.together02be.stock.dto.KisPriceRes;
-import com.back.together02be.stock.dto.KisTokenRes;
 
 @Component
 public class KisPriceClient {
