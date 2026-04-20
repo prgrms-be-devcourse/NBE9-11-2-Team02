@@ -1,14 +1,11 @@
 package com.back.together02be.asset.service;
 
-import com.back.together02be.asset.controller.AssetController;
 import com.back.together02be.asset.dto.response.StockInfoRes;
 import com.back.together02be.asset.entity.UserStock;
 import com.back.together02be.asset.repository.UserAccountRepository;
 import com.back.together02be.asset.repository.UserStockRepository;
-import org.springframework.data.repository.Repository;
-import org.springframework.stereotype.Service;
-
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 
@@ -18,7 +15,7 @@ public class AssetService {
     private final UserAccountRepository userAccountRepository;
     private final UserStockRepository userStockRepository;
     public long getTotalAmountByUserId(long userId){
-        return userAccountRepository.findById(userId)
+        return userAccountRepository.findByUsersId(userId)
                 .orElseThrow(()->new RuntimeException("계좌 없음"))
                 .getTotalPurchase();
     }
