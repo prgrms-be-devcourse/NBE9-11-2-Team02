@@ -1,15 +1,10 @@
 package com.back.together02be.ranking.service;
 
 import com.back.together02be.asset.entity.UserAccount;
-import com.back.together02be.asset.entity.UserStock;
-import com.back.together02be.asset.repository.UserAccountRepository;
-import com.back.together02be.asset.repository.UserStockRepository;
 import com.back.together02be.ranking.entity.Ranking;
 import com.back.together02be.ranking.entity.RankingSeason;
 import com.back.together02be.ranking.entity.RankingSnapshotType;
 import com.back.together02be.ranking.repository.RankingRepository;
-import com.back.together02be.stock.dto.RealtimeStockPrice;
-import com.back.together02be.stock.service.RealTimeStockPriceStore;
 import com.back.together02be.users.entity.Users;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,12 +23,11 @@ import java.util.List;
 public class RankingSnapshotService {
 
     private final RankingRepository rankingRepository;
-    private final UserAccountRepository userAccountRepository;
-    private final UserStockRepository userStockRepository;
-    private final RealTimeStockPriceStore realTimeStockPriceStore;
+    private final com.back.together02be.asset.repository.UserAccountRepository userAccountRepository;
     private final RankingSeasonService rankingSeasonService;
+    private final RankingAssetCalculator rankingAssetCalculator;
 
-    // DAILY 랭킹은 같은 날짜면 덮어쓴다.
+    // DAILY 랭킹을 생성하는 메서드.
     @Transactional
     public void createDailySnapshot(LocalDate snapshotDate) {
         rankingRepository.deleteRankings(RankingSnapshotType.DAILY, snapshotDate);
@@ -44,7 +38,7 @@ public class RankingSnapshotService {
         log.info("DAILY ranking created: {}", snapshotDate);
     }
 
-    // MONTHLY 랭킹은 같은 날짜면 중복 저장하지 않는다.
+    // MONTHLY 랭킹을 생성하는 메서드.
     @Transactional
     public void createMonthlySnapshot(LocalDate snapshotDate) {
         if (rankingRepository.existsRanking(RankingSnapshotType.MONTHLY, snapshotDate)) {
@@ -74,42 +68,12 @@ public class RankingSnapshotService {
     // 계좌 하나를 랭킹 후보 데이터로 변환한다.
     private RankingCandidate toCandidate(UserAccount userAccount) {
         Users user = userAccount.getUsers();
-        List<UserStock> userStocks = userStockRepository.findAllByUsersId(user.getId());
 
-        long stockEvaluationAmount = userStocks.stream()
-                .mapToLong(this::calculateStockEvaluationAmount)
-                .sum();
-
-        long totalAsset = userAccount.getDeposit() + stockEvaluationAmount;
+        long totalAsset = rankingAssetCalculator.calculateTotalAsset(userAccount);
         RankingSeason season = rankingSeasonService.getActiveSeason(user.getId());
         BigDecimal profitRate = calculateProfitRate(totalAsset, season.getBaseAsset());
 
         return new RankingCandidate(user, totalAsset, profitRate);
-    }
-
-    // 보유 종목 1건의 평가금액을 계산한다.
-    private long calculateStockEvaluationAmount(UserStock userStock) {
-        String stockCode = userStock.getStock().getStockCode();
-        RealtimeStockPrice realtimeStockPrice = realTimeStockPriceStore.get(stockCode);
-
-        long currentPrice = extractCurrentPrice(realtimeStockPrice, userStock.getAveragePrice());
-
-        return currentPrice * userStock.getQuantity();
-    }
-
-    // 실시간 가격이 없으면 평균매입가를 대신 사용한다.
-    private long extractCurrentPrice(RealtimeStockPrice realtimeStockPrice, Long fallbackPrice) {
-        if (realtimeStockPrice == null
-                || realtimeStockPrice.getPrice() == null
-                || realtimeStockPrice.getPrice().isBlank()) {
-            return fallbackPrice;
-        }
-
-        try {
-            return Long.parseLong(realtimeStockPrice.getPrice());
-        } catch (NumberFormatException e) {
-            return fallbackPrice;
-        }
     }
 
     // 수익률은 시즌 기준 자산 대비로 계산한다.

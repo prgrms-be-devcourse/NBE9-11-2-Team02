@@ -1,5 +1,6 @@
-package com.back.together02be.ranking.service;
+package com.back.together02be.ranking.scheduler;
 
+import com.back.together02be.ranking.service.RankingSnapshotService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -10,7 +11,7 @@ import java.time.LocalDate;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class RankingScheduler {
+public class RankingDailyScheduler {
 
     private final RankingSnapshotService rankingSnapshotService;
 
