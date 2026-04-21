@@ -4,12 +4,11 @@ import com.back.together02be.asset.entity.UserAccount;
 import com.back.together02be.asset.entity.UserStock;
 import com.back.together02be.asset.repository.UserAccountRepository;
 import com.back.together02be.asset.repository.UserStockRepository;
-import com.back.together02be.global.idempotency.IdempotencyKey;
 import com.back.together02be.global.idempotency.IdempotencyKeyRepository;
+import com.back.together02be.stock.dto.RealtimeStockPrice;
 import com.back.together02be.stock.entity.Stock;
 import com.back.together02be.stock.repository.StockRepository;
 import com.back.together02be.stock.service.RealTimeStockPriceStore;
-import com.back.together02be.stock.dto.RealtimeStockPrice;
 import com.back.together02be.trade.dto.BuyReq;
 import com.back.together02be.trade.dto.BuyRes;
 import com.back.together02be.trade.entity.Trade;
@@ -44,14 +43,7 @@ public class TradeBuyProcessor {
 
     @Transactional
     public BuyRes processBuy(Long userId, String idempotencyKey, BuyReq request) {
-        // 1. 요청 시간 검증 — 버튼 클릭 후 10초 초과 시 체결 거부
-        IdempotencyKey idempotencyKeyEntity = idempotencyKeyRepository.findByIdempotencyKey(idempotencyKey)
-                .orElseThrow(() -> new EntityNotFoundException("멱등성 키 정보가 없습니다."));
-        if (Duration.between(idempotencyKeyEntity.getCreatedAt(), LocalDateTime.now()).getSeconds() > 10) {
-            throw new IllegalStateException("요청 시간이 초과되었습니다. 다시 시도해주세요.");
-        }
-
-        // 2. 주식 정보 조회
+        // 1. 주식 정보 조회
         Stock stock = stockRepository.findById(request.stockId())
                 .orElseThrow(() -> new EntityNotFoundException("주식 정보가 없습니다."));
 
@@ -123,7 +115,8 @@ public class TradeBuyProcessor {
         );
 
         // 7. 응답을 같은 트랜잭션 안에서 저장 — 거래와 캐시가 원자적으로 커밋
-        idempotencyKeyEntity.storeResponse(toJson(result));
+        idempotencyKeyRepository.findByIdempotencyKey(idempotencyKey)
+                .ifPresent(k -> k.storeResponse(toJson(result)));
 
         return result;
     }

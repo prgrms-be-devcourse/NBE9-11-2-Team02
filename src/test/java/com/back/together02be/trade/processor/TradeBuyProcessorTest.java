@@ -145,19 +145,6 @@ class TradeBuyProcessorTest {
     }
 
     @Test
-    @DisplayName("요청 시간 초과 — 버튼 클릭 후 10초 초과 시 체결 거부")
-    void 요청_시간_초과_예외() {
-        IdempotencyKey staleKey = new IdempotencyKey("test-key", 1L);
-        ReflectionTestUtils.setField(staleKey, "createdAt", LocalDateTime.now().minusSeconds(11));
-
-        when(idempotencyKeyRepository.findByIdempotencyKey("test-key")).thenReturn(Optional.of(staleKey));
-
-        assertThatThrownBy(() -> tradeBuyProcessor.processBuy(1L, "test-key", new BuyReq(1L, 10L, 70_000L)))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("요청 시간이 초과");
-    }
-
-    @Test
     @DisplayName("슬리피지 초과 — 현재가가 예상가 대비 2% 초과 시 예외")
     void 슬리피지_초과_예외() {
         long expectedPrice = 70_000L;
