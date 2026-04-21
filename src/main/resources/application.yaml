@@ -36,6 +36,7 @@ spring:
 jwt:
   access-expire-seconds: 900
   refresh-expire-seconds: 604800
+  secret: ${JWT_SECRET:default-secret}
 
 springdoc:
   default-produces-media-type: application/json; charset=UTF-8

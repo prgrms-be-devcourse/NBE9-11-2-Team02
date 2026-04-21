@@ -40,4 +40,11 @@ public class UserAccount extends BaseEntity {
 		this.totalPurchase += amount;
 	}
 
+	public void addDeposit(Long amount) {
+		this.deposit += amount;  // 누적 합산
+	}
+
+	public void subtractTotalPurchase(Long amount) {
+		this.totalPurchase = Math.max(0L, this.totalPurchase - amount);
+	}
 }
