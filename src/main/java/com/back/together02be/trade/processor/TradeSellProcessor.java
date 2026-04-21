@@ -52,6 +52,9 @@ public class TradeSellProcessor {
         if (stockPrice == null) {
             throw new EntityNotFoundException("현재가 정보를 불러올 수 없습니다. 잠시 후 다시 시도해주세요.");
         }
+        if (stockPrice.isStale(10)) { // 10초 기준
+            throw new IllegalStateException("시세 정보가 10초 이상 지연되었습니다. 거래가 불가능합니다.");
+        }
         Long price = Long.parseLong(stockPrice.getPrice());
 
         // 0.98을 BigDecimal로 표현
