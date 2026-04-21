@@ -10,7 +10,7 @@ import com.back.together02be.stock.service.RealTimeStockPriceStore;
 import com.back.together02be.stock.dto.RealtimeStockPrice;
 import com.back.together02be.trade.dto.BuyReq;
 import com.back.together02be.trade.dto.BuyRes;
-import com.back.together02be.trade.enitity.Trade;
+import com.back.together02be.trade.entity.Trade;
 import com.back.together02be.trade.repository.TradeRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;

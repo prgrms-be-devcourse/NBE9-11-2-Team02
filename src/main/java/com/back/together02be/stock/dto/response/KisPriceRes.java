@@ -32,6 +32,10 @@ public record KisPriceRes(
             @JsonProperty("prdy_vrss")
             String priceDifference,
 
+            // 전일 대비 부호
+            @JsonProperty("prdy_vrss_sign")
+            String changeSign,
+
             // 전일 대비 등락률
             @JsonProperty("prdy_ctrt")
             String changeRate

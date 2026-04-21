@@ -4,7 +4,10 @@ import com.back.together02be.global.exception.DuplicateRequestException;
 import com.back.together02be.global.idempotency.IdempotencyService;
 import com.back.together02be.trade.dto.BuyReq;
 import com.back.together02be.trade.dto.BuyRes;
+import com.back.together02be.trade.dto.request.TradeSellReq;
+import com.back.together02be.trade.dto.response.TradeSellRes;
 import com.back.together02be.trade.processor.TradeBuyProcessor;
+import com.back.together02be.trade.processor.TradeSellProcessor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -14,6 +17,7 @@ public class TradeService {
 
     private final TradeBuyProcessor tradeBuyProcessor;
     private final IdempotencyService idempotencyService;
+    private final TradeSellProcessor tradeSellProcessor;
 
     /**
      * TR-01 매수
@@ -31,6 +35,18 @@ public class TradeService {
             return tradeBuyProcessor.processBuy(userId, request);
         } catch (Exception e) {
             idempotencyService.remove(idempotencyKey); // 실패 시 키 반납 → 재시도 허용
+            throw e;
+        }
+    }
+
+    public TradeSellRes sell(Long userId, String idempotemcyKey, TradeSellReq req){
+        if(!idempotencyService.registerIfAbsent(idempotemcyKey,userId)){
+            throw new IllegalStateException("이미 처리된 요청입니다.");
+        }
+        try {
+            return tradeSellProcessor.processSell(userId,req);
+        }catch (Exception e){
+            idempotencyService.remove(idempotemcyKey);
             throw e;
         }
     }

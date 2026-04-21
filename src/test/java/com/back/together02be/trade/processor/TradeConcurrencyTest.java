@@ -3,8 +3,8 @@ package com.back.together02be.trade.processor;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
-import com.back.together02be.asset.enitity.UserAccount;
-import com.back.together02be.asset.enitity.UserStock;
+import com.back.together02be.asset.entity.UserAccount;
+import com.back.together02be.asset.entity.UserStock;
 import com.back.together02be.asset.repository.UserAccountRepository;
 import com.back.together02be.asset.repository.UserStockRepository;
 import com.back.together02be.stock.dto.RealtimeStockPrice;

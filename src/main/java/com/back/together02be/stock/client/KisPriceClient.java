@@ -1,13 +1,19 @@
 package com.back.together02be.stock.client;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.Map;
+
 import com.back.together02be.stock.dto.response.KisPriceRes;
 import com.back.together02be.stock.dto.response.KisTokenRes;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
-import java.util.Map;
+import com.back.together02be.chart.constant.ChartPeriod;
+import com.back.together02be.chart.dto.response.KisChartApiRes;
 
 @Component
 public class KisPriceClient {
@@ -86,6 +92,43 @@ public class KisPriceClient {
         //예외 처리
         if (response == null || response.output() == null) {
             throw new IllegalStateException("현재가 조회 실패: stockCode=" + stockCode);
+        }
+
+        return response;
+    }
+
+    public KisChartApiRes fetchCandles(String stockCode, ChartPeriod period) {
+        String token = getAccessToken();
+
+        LocalDate endDate = LocalDate.now();
+        LocalDate startDate = period.startDate(endDate);
+
+        String url = restBaseUrl
+            + "/uapi/domestic-stock/v1/quotations/inquire-daily-itemchartprice"
+            + "?FID_COND_MRKT_DIV_CODE=J"
+            + "&FID_INPUT_ISCD=" + stockCode
+            + "&FID_INPUT_DATE_1=" + startDate.format(DateTimeFormatter.BASIC_ISO_DATE)
+            + "&FID_INPUT_DATE_2=" + endDate.format(DateTimeFormatter.BASIC_ISO_DATE)
+            + "&FID_PERIOD_DIV_CODE=" + period.getKisPeriodCode()
+            + "&FID_ORG_ADJ_PRC=0";
+
+        KisChartApiRes response = restClient.get()
+            .uri(url)
+            .headers(headers -> {
+                headers.setBearerAuth(token);
+                headers.set("appkey", appKey);
+                headers.set("appsecret", appSecret);
+                headers.set("tr_id", "FHKST03010100");
+                headers.set("custtype", "P");
+            })
+            .retrieve()
+            .onStatus(HttpStatusCode::isError, (req, res) -> {
+                throw new IllegalStateException("KIS 차트 API 호출 실패: HTTP " + res.getStatusCode());
+            })
+            .body(KisChartApiRes.class);
+
+        if (response == null || response.output2() == null || response.output2().isEmpty()) {
+            throw new IllegalStateException("KIS 차트 응답이 비어있습니다: code=" + stockCode);
         }
 
         return response;

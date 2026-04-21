@@ -1,4 +1,4 @@
-package com.back.together02be.infra.kis;
+package com.back.together02be.infra.kis.websocket;
 
 import java.net.URI;
 
@@ -56,10 +56,10 @@ public class KisWebSocketClient {
 	}
 
 	public void subscribe(String stockCode) {
-		handler.subscribe(client, stockCode);
+		handler.subscribe(stockCode);
 	}
 
 	public void unsubscribe(String stockCode) {
-		handler.unsubscribe(client, stockCode);
+		handler.unsubscribe(stockCode);
 	}
 }
