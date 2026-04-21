@@ -17,7 +17,10 @@ import com.back.together02be.trade.repository.TradeRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityNotFoundException;
 import java.time.Duration;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.springframework.stereotype.Component;
@@ -59,7 +62,19 @@ public class TradeBuyProcessor {
         }
         Long price = Long.parseLong(stockPrice.getPrice());
 
-        // 3. 슬리피지 보호 — 현재가가 예상가 대비 2% 초과 상승 시 매수 거부
+        // 3. 가격 신선도 검증 — 웹소켓 체결시각 기준 10초 초과 시 stale 가격으로 판단해 거부
+        String tradeTime = stockPrice.getTradeTime();
+        if (tradeTime != null && !tradeTime.isEmpty()) {
+            LocalDateTime tradeDateTime = LocalDateTime.of(
+                    LocalDate.now(),
+                    LocalTime.parse(tradeTime, DateTimeFormatter.ofPattern("HHmmss"))
+            );
+            if (Duration.between(tradeDateTime, LocalDateTime.now()).getSeconds() > 10) {
+                throw new IllegalStateException("가격 정보가 오래되었습니다. 잠시 후 다시 시도해주세요.");
+            }
+        }
+
+        // 4. 슬리피지 보호 — 현재가가 예상가 대비 2% 초과 상승 시 매수 거부
         if (price > request.expectedPrice() * 1.02) {
             throw new IllegalStateException(
                     String.format("가격이 너무 올랐습니다. (예상: %,d원 / 현재: %,d원)", request.expectedPrice(), price));
@@ -67,7 +82,7 @@ public class TradeBuyProcessor {
 
         long amount = price * request.quantity();
 
-        // 4. 원자적 잔고 차감 — 잔고 확인과 차감을 DB 단에서 한 번에 처리
+        // 5. 원자적 잔고 차감 — 잔고 확인과 차감을 DB 단에서 한 번에 처리
         int updated = userAccountRepository.decreaseDepositIfSufficient(userId, amount);
         if (updated == 0) {
             UserAccount accountForMsg = userAccountRepository.findByUsersId(userId)
