@@ -7,6 +7,8 @@ import com.back.together02be.asset.entity.UserAccount;
 import com.back.together02be.asset.entity.UserStock;
 import com.back.together02be.asset.repository.UserAccountRepository;
 import com.back.together02be.asset.repository.UserStockRepository;
+import com.back.together02be.global.idempotency.IdempotencyKey;
+import com.back.together02be.global.idempotency.IdempotencyKeyRepository;
 import com.back.together02be.stock.dto.RealtimeStockPrice;
 import com.back.together02be.stock.entity.Stock;
 import com.back.together02be.stock.entity.StockMarket;
@@ -16,6 +18,7 @@ import com.back.together02be.trade.dto.BuyReq;
 import com.back.together02be.trade.repository.TradeRepository;
 import com.back.together02be.users.entity.Users;
 import com.back.together02be.users.repository.UsersRepository;
+import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -56,6 +59,9 @@ class TradeConcurrencyTest {
     @Autowired
     TradeRepository tradeRepository;
 
+    @Autowired
+    IdempotencyKeyRepository idempotencyKeyRepository;
+
     @MockitoBean
     RealTimeStockPriceStore stockPriceStore;
 
@@ -77,7 +83,7 @@ class TradeConcurrencyTest {
 
     @AfterEach
     void tearDown() {
-        // 외래키 참조 순서대로 삭제: Trade → UserStock → UserAccount → Stock → Users
+        // 외래키 참조 순서대로 삭제: Trade → UserStock → UserAccount → IdempotencyKey → Stock → Users
         tradeRepository.deleteAll(
                 tradeRepository.findAll().stream()
                         .filter(t -> t.getStock().getId().equals(stock.getId()))
@@ -87,6 +93,11 @@ class TradeConcurrencyTest {
                 .ifPresent(userStockRepository::delete);
         userAccountRepository.findByUsersId(user.getId())
                 .ifPresent(userAccountRepository::delete);
+        idempotencyKeyRepository.deleteAll(
+                idempotencyKeyRepository.findAll().stream()
+                        .filter(k -> k.getUserId().equals(user.getId()))
+                        .toList()
+        );
         stockRepository.delete(stock);
         usersRepository.delete(user);
     }
@@ -111,8 +122,10 @@ class TradeConcurrencyTest {
         for (int i = 0; i < threadCount; i++) {
             executor.submit(() -> {
                 try {
+                    String key = UUID.randomUUID().toString();
+                    idempotencyKeyRepository.save(new IdempotencyKey(key, user.getId()));
                     startLatch.await();
-                    tradeBuyProcessor.processBuy(user.getId(), java.util.UUID.randomUUID().toString(), new BuyReq(stock.getId(), quantity, 70_000L));
+                    tradeBuyProcessor.processBuy(user.getId(), key, new BuyReq(stock.getId(), quantity, 70_000L));
                     successCount.incrementAndGet();
                 } catch (Exception e) {
                     failCount.incrementAndGet();
@@ -156,8 +169,10 @@ class TradeConcurrencyTest {
         for (int i = 0; i < threadCount; i++) {
             executor.submit(() -> {
                 try {
+                    String key = UUID.randomUUID().toString();
+                    idempotencyKeyRepository.save(new IdempotencyKey(key, user.getId()));
                     startLatch.await();
-                    tradeBuyProcessor.processBuy(user.getId(), java.util.UUID.randomUUID().toString(), new BuyReq(stock.getId(), quantity, 70_000L));
+                    tradeBuyProcessor.processBuy(user.getId(), key, new BuyReq(stock.getId(), quantity, 70_000L));
                     successCount.incrementAndGet();
                 } catch (Exception e) {
                     failCount.incrementAndGet();

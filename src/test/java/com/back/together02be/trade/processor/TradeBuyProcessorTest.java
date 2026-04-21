@@ -14,6 +14,7 @@ import com.back.together02be.asset.entity.UserAccount;
 import com.back.together02be.asset.entity.UserStock;
 import com.back.together02be.asset.repository.UserAccountRepository;
 import com.back.together02be.asset.repository.UserStockRepository;
+import com.back.together02be.global.idempotency.IdempotencyKey;
 import com.back.together02be.global.idempotency.IdempotencyKeyRepository;
 import com.back.together02be.stock.dto.RealtimeStockPrice;
 import com.back.together02be.stock.entity.Stock;
@@ -27,6 +28,7 @@ import com.back.together02be.trade.repository.TradeRepository;
 import com.back.together02be.users.entity.Users;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityNotFoundException;
+import java.time.LocalDateTime;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -54,6 +56,7 @@ class TradeBuyProcessorTest {
     private Users user;
     private Stock stock;
     private UserAccount account;
+    private IdempotencyKey freshKey;
 
     @BeforeEach
     void setUp() {
@@ -62,6 +65,10 @@ class TradeBuyProcessorTest {
         stock = new Stock("005930", "삼성전자", StockMarket.KOSPI);
         ReflectionTestUtils.setField(stock, "id", 1L);
 
+        freshKey = new IdempotencyKey("test-key", 1L);
+        ReflectionTestUtils.setField(freshKey, "createdAt", LocalDateTime.now());
+
+        lenient().when(idempotencyKeyRepository.findByIdempotencyKey(anyString())).thenReturn(Optional.of(freshKey));
         lenient().when(stockRepository.findById(1L)).thenReturn(Optional.of(stock));
         lenient().when(userAccountRepository.decreaseDepositIfSufficient(anyLong(), anyLong())).thenReturn(1);
         lenient().when(userAccountRepository.findByUsersIdWithLock(1L)).thenReturn(Optional.of(account));
@@ -70,8 +77,6 @@ class TradeBuyProcessorTest {
             ReflectionTestUtils.setField(trade, "id", 1L);
             return trade;
         });
-        // 응답 저장 단계에서 키를 찾지 못해도 정상 동작
-        lenient().when(idempotencyKeyRepository.findByIdempotencyKey(anyString())).thenReturn(Optional.empty());
     }
 
     private RealtimeStockPrice mockPrice(String stockCode, long price) {
@@ -137,6 +142,19 @@ class TradeBuyProcessorTest {
         assertThatThrownBy(() -> tradeBuyProcessor.processBuy(1L, "test-key", new BuyReq(1L, quantity, 70_000L)))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("잔고가 부족합니다");
+    }
+
+    @Test
+    @DisplayName("요청 시간 초과 — 버튼 클릭 후 10초 초과 시 체결 거부")
+    void 요청_시간_초과_예외() {
+        IdempotencyKey staleKey = new IdempotencyKey("test-key", 1L);
+        ReflectionTestUtils.setField(staleKey, "createdAt", LocalDateTime.now().minusSeconds(11));
+
+        when(idempotencyKeyRepository.findByIdempotencyKey("test-key")).thenReturn(Optional.of(staleKey));
+
+        assertThatThrownBy(() -> tradeBuyProcessor.processBuy(1L, "test-key", new BuyReq(1L, 10L, 70_000L)))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("요청 시간이 초과");
     }
 
     @Test
