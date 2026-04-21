@@ -9,14 +9,17 @@ import com.back.together02be.trade.dto.response.TradeSellRes;
 import com.back.together02be.trade.service.TradeService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
@@ -27,13 +30,6 @@ public class TradeController {
     private final TradeService tradeService;
 
     @Operation(summary = "주식 매수", description = "실시간 현재가 기준으로 매수를 처리합니다. X-Idempotency-Key 헤더 필수.")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "매수 성공"),
-            @ApiResponse(responseCode = "400", description = "입력값 오류 또는 잔고 부족"),
-            @ApiResponse(responseCode = "404", description = "주식 정보 없음 / 계좌 없음 / 현재가 없음"),
-            @ApiResponse(responseCode = "409", description = "중복 요청 (이미 처리된 요청)"),
-            @ApiResponse(responseCode = "500", description = "서버 오류")
-    })
     @PostMapping("/buy")
     public ResponseEntity<ApiRes<BuyRes>> buy(
             @AuthenticationPrincipal SecurityUser user,
