@@ -9,6 +9,7 @@ import com.back.together02be.asset.repository.UserAccountRepository;
 import com.back.together02be.asset.repository.UserStockRepository;
 import com.back.together02be.stock.dto.RealtimeStockPrice;
 import com.back.together02be.stock.entity.Stock;
+import com.back.together02be.stock.entity.StockMarket;
 import com.back.together02be.stock.repository.StockRepository;
 import com.back.together02be.stock.service.RealTimeStockPriceStore;
 import com.back.together02be.trade.dto.BuyReq;
@@ -64,7 +65,7 @@ class TradeConcurrencyTest {
     @BeforeEach
     void setUp() {
         user = usersRepository.save(new Users("concurrency_user", "pw", "동시성테스트유저"));
-        stock = stockRepository.save(new Stock("999999", "테스트종목", "KOSPI"));
+        stock = stockRepository.save(new Stock("999999", "테스트종목", StockMarket.KOSPI));
 
         when(stockPriceStore.get("999999")).thenReturn(
                 RealtimeStockPrice.builder()
@@ -111,7 +112,7 @@ class TradeConcurrencyTest {
             executor.submit(() -> {
                 try {
                     startLatch.await();
-                    tradeBuyProcessor.processBuy(user.getId(), new BuyReq(stock.getId(), quantity));
+                    tradeBuyProcessor.processBuy(user.getId(), java.util.UUID.randomUUID().toString(), new BuyReq(stock.getId(), quantity, 70_000L));
                     successCount.incrementAndGet();
                 } catch (Exception e) {
                     failCount.incrementAndGet();
@@ -156,7 +157,7 @@ class TradeConcurrencyTest {
             executor.submit(() -> {
                 try {
                     startLatch.await();
-                    tradeBuyProcessor.processBuy(user.getId(), new BuyReq(stock.getId(), quantity));
+                    tradeBuyProcessor.processBuy(user.getId(), java.util.UUID.randomUUID().toString(), new BuyReq(stock.getId(), quantity, 70_000L));
                     successCount.incrementAndGet();
                 } catch (Exception e) {
                     failCount.incrementAndGet();
