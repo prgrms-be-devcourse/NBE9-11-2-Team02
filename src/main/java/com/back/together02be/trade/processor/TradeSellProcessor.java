@@ -4,6 +4,7 @@ import com.back.together02be.asset.entity.UserAccount;
 import com.back.together02be.asset.entity.UserStock;
 import com.back.together02be.asset.repository.UserAccountRepository;
 import com.back.together02be.asset.repository.UserStockRepository;
+import com.back.together02be.global.util.MarketTimeValidator;
 import com.back.together02be.stock.dto.RealtimeStockPrice;
 import com.back.together02be.stock.entity.Stock;
 import com.back.together02be.stock.repository.StockRepository;
@@ -29,6 +30,8 @@ public class TradeSellProcessor {
 
     @Transactional
     public TradeSellRes processSell(Long userId, TradeSellReq request) {
+        //0.장 마감 조회
+        MarketTimeValidator.validateMarketOpen();
 
         // 1. 주식 정보 조회 및 보유 주식 조회
         Stock stock = stockRepository.findById(request.stockId())
