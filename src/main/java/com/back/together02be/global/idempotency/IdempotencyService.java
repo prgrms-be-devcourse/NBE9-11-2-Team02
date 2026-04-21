@@ -63,7 +63,7 @@ public class IdempotencyService {
 	 * 30초마다 실행 — 60초 이상 처리 중(responseJson=null)인 키 삭제.
 	 * 서버 크래시로 응답 저장 못 한 키를 정리해 재시도를 허용.
 	 */
-	@Scheduled(fixedDelay = 30000)
+	@Scheduled(fixedDelay = 300000)
 	@Transactional
 	public void cleanupStaleInProgressKeys() {
 		LocalDateTime staleThreshold = LocalDateTime.now().minusSeconds(60);
