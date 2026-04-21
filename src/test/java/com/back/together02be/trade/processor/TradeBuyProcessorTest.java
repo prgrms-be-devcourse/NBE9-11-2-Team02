@@ -185,6 +185,45 @@ class TradeBuyProcessorTest {
     }
 
     @Test
+    @DisplayName("가격 신선도 초과 — 웹소켓 체결시각 10초 초과 시 체결 거부")
+    void 가격_신선도_초과_예외() {
+        String staleTime = LocalDateTime.now().minusSeconds(11)
+                .format(java.time.format.DateTimeFormatter.ofPattern("HHmmss"));
+
+        when(stockPriceStore.get("005930")).thenReturn(
+                RealtimeStockPrice.builder()
+                        .stockCode("005930")
+                        .price("70000")
+                        .tradeTime(staleTime)
+                        .build()
+        );
+
+        assertThatThrownBy(() -> tradeBuyProcessor.processBuy(1L, "test-key", new BuyReq(1L, 10L, 70_000L)))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("가격 정보가 오래되었습니다");
+    }
+
+    @Test
+    @DisplayName("가격 신선도 허용 — 웹소켓 체결시각 10초 이내 시 정상 매수")
+    void 가격_신선도_허용_정상_매수() {
+        String freshTime = LocalDateTime.now()
+                .format(java.time.format.DateTimeFormatter.ofPattern("HHmmss"));
+
+        when(stockPriceStore.get("005930")).thenReturn(
+                RealtimeStockPrice.builder()
+                        .stockCode("005930")
+                        .price("70000")
+                        .tradeTime(freshTime)
+                        .build()
+        );
+        when(userStockRepository.findByUsersIdAndStockId(1L, 1L)).thenReturn(Optional.empty());
+
+        BuyRes response = tradeBuyProcessor.processBuy(1L, "test-key", new BuyReq(1L, 10L, 70_000L));
+
+        assertThat(response.price()).isEqualTo(70_000L);
+    }
+
+    @Test
     @DisplayName("현재가 없음 — 예외 발생")
     void 현재가_없을때_예외() {
         when(stockPriceStore.get("005930")).thenReturn(null);
