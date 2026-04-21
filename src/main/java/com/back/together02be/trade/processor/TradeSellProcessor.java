@@ -13,7 +13,6 @@ import com.back.together02be.trade.dto.request.TradeSellReq;
 import com.back.together02be.trade.dto.response.TradeSellRes;
 import com.back.together02be.trade.entity.Trade;
 import com.back.together02be.trade.repository.TradeRepository;
-import com.back.together02be.users.entity.Users;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -41,7 +40,7 @@ public class TradeSellProcessor {
         Stock stock = stockRepository.findById(request.stockId())
                 .orElseThrow(() -> new EntityNotFoundException("주식 정보가 없습니다."));
 
-        UserStock userStock = userStockRepository.findByUsersIdAndStockIdWithLock(request.userId(),request.stockId())
+        UserStock userStock = userStockRepository.findByUsersIdAndStockId(request.userId(),request.stockId())
                 .orElseThrow(()->new EntityNotFoundException("보유하지 않은 주식입니다."));
 
         UserAccount account = userAccountRepository.findByUsersId(userId)
@@ -57,7 +56,7 @@ public class TradeSellProcessor {
         }
         Long price = Long.parseLong(stockPrice.getPrice());
 
-        // 0.98을 BigDecimal로 표현
+        // 슬리피지 검증 0.98을 BigDecimal로 표현
         BigDecimal minPrice = BigDecimal.valueOf(request.expectedPrice())
                 .multiply(SELL_TOLERANCE_RATE)
                 .setScale(0, RoundingMode.FLOOR);
@@ -73,10 +72,6 @@ public class TradeSellProcessor {
             throw new IllegalStateException("보유 수량이 부족합니다.");
         }
 
-        // 4. Trade에 쓸 참조 미리 꺼내기 (삭제 전에!)
-        Users users = userStock.getUsers();
-        Stock userStockStock = userStock.getStock();
-
         // 5. 수익 / 금액 계산
         long profit = (price - userStock.getAveragePrice()) * request.quantity();
         long amount = price * request.quantity();
@@ -86,10 +81,8 @@ public class TradeSellProcessor {
         account.subtractTotalPurchase(userStock.getAveragePrice()* request.quantity());
 
         //7. 수량 차감 및 전량 매도시 삭제
-        if(userStock.getQuantity().equals(request.quantity())){
-            userStockRepository.delete(userStock);
-        } else{
-            userStock.updateQuantity(userStock.getQuantity() - request.quantity());
+        if(userStock.getQuantity().equals(request.quantity())) {
+            userStockRepository.deleteByUserAndStock(userId, request.stockId());
         }
 
         //8. 거래 내역 저장
