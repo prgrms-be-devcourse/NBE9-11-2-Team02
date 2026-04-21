@@ -36,11 +36,10 @@ public class AssetController {
         return ResponseEntity.ok(new ApiRes<>("보유 종목 조회 성공", userStocks));
     }
 
-    @GetMapping("/accounts/{userId}")
+    @GetMapping("/accounts")
     @Operation(summary = "총 매수금 조회")
-    public ApiRes<TotalPurchaseRes> totalPrice(@PathVariable long userId){
-        //인증된 사용자 정보 가져오기
-        //총매수액 가져오기
+    public ApiRes<TotalPurchaseRes> totalPrice(@AuthenticationPrincipal SecurityUser user){
+        long userId = user.getId();
         long totalPurchase = assetService.getTotalAmountByUserId(userId);
         List<StockInfoRes> stockInfos = assetService.getStockInfo(userId);
 

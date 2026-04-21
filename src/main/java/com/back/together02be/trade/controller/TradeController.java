@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -45,12 +44,12 @@ public class TradeController {
     @Operation(summary = "주식 매도", description = "실시간 현재가 기준으로 매도를 처리합니다. X-Idempotency-Key 헤더 필수.")
     @PostMapping("/sell")
     public ResponseEntity<ApiRes<TradeSellRes>> sell(
+            @AuthenticationPrincipal SecurityUser user,
             @Parameter(description = "중복 요청 방지용 UUID (버튼 클릭마다 새로 생성)", required = true)
             @RequestHeader("X-Idempotency-Key") String idempotencyKey,
-            @RequestParam Long userId, // TODO: Security 적용 후 제거
             @RequestBody @Valid TradeSellReq req
     ){
-        TradeSellRes res = tradeService.sell(userId,idempotencyKey,req);
-        return ResponseEntity.ok(new ApiRes<>("매수가 완료되었습니다.", res));
+        TradeSellRes res = tradeService.sell(user.getId(),idempotencyKey,req);
+        return ResponseEntity.ok(new ApiRes<>("매도가 완료되었습니다.", res));
     }
 }
