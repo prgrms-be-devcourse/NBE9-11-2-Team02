@@ -30,20 +30,4 @@ public class RealTimeStockPriceStore {
 	public RealtimeStockPrice get(String stockCode) {
 		return priceMap.get(stockCode);
 	}
-
-	// 구독자 추가
-	public int addSubscriber(String stockCode) {
-		int count = subscriberCount.computeIfAbsent(stockCode, k -> new AtomicInteger(0)).incrementAndGet();
-		// log.info("구독자 추가 - 종목: {} | 현재 구독자 수: {}", stockCode, count);
-		return count;
-	}
-
-	// 구독자 제거-> 남은 구독자 수 반환
-	public int removeSubscriber(String stockCode) {
-		AtomicInteger count = subscriberCount.get(stockCode);
-		if (count == null) return 0;
-		int remaining = count.decrementAndGet();
-		// log.info("구독자 제거 - 종목: {} | 남은 구독자 수: {}", stockCode, remaining);
-		return remaining;
-	}
 }

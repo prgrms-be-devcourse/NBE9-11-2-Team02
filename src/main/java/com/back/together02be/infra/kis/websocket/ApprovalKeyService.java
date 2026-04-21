@@ -1,4 +1,4 @@
-package com.back.together02be.infra.kis;
+package com.back.together02be.infra.kis.websocket;
 
 import java.util.Map;
 

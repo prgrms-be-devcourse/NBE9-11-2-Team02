@@ -7,6 +7,7 @@ import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
+import com.back.together02be.infra.kis.websocket.KisWebSocketClient;
 import com.back.together02be.stock.client.KisPriceClient;
 import com.back.together02be.stock.dto.RealtimeStockPrice;
 import com.back.together02be.stock.dto.response.KisPriceRes;
@@ -40,14 +41,13 @@ public class StockSubscriptionInitializer {
 
 		seedPricesByRest(stocks);
 
-		// 로그
-		stocks.forEach(stock -> {
-			RealtimeStockPrice cached = rtStockPriceStore.get(stock.getStockCode());
-			log.info("[Init] 캐시 확인 - {}: currentPrice={}, changeRate={}",
-				stock.getStockCode(),
-				cached != null ? cached.getPrice() : "null",
-				cached != null ? cached.getChangeRate() : "null");
-		});
+		// stocks.forEach(stock -> {
+		// 	RealtimeStockPrice cached = rtStockPriceStore.get(stock.getStockCode());
+		// 	log.info("rest 캐시 확인 - {}: currentPrice={}, changeRate={}",
+		// 		stock.getStockCode(),
+		// 		cached != null ? cached.getPrice() : "null",
+		// 		cached != null ? cached.getChangeRate() : "null");
+		// });
 
 		subscribeAll(stocks);
 

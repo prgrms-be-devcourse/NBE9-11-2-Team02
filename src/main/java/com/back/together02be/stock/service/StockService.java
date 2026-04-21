@@ -12,7 +12,6 @@ import java.util.concurrent.TimeUnit;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
-import com.back.together02be.infra.kis.KisWebSocketClient;
 import com.back.together02be.stock.cache.StockPriceCache;
 import com.back.together02be.stock.client.KisPriceClient;
 import com.back.together02be.stock.dto.RealtimeStockPrice;
@@ -35,7 +34,8 @@ public class StockService {
 
 	//SSE용
 	private final RealTimeStockPriceStore rtStockPriceStore;
-	private final KisWebSocketClient kisWebSocketClient;
+
+	private static final long SSE_INTERVAL_MS = 500; // 상세 종목 시세 갱신 주기
 
 	// REST 전체 종목 조회용 캐시
 	private final Map<String, StockPriceCache> priceCache = new ConcurrentHashMap<>();
@@ -76,13 +76,6 @@ public class StockService {
 
 		findStock(stockCode);
 
-		int count = rtStockPriceStore.addSubscriber(stockCode); // 구독자 추가
-
-		// 종목의 첫 구독자일 때만 구독 요청
-		if (count == 1) {
-			kisWebSocketClient.subscribe(stockCode);
-		}
-
 		SseEmitter emitter = new SseEmitter(Long.MAX_VALUE);
 
 		ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
@@ -101,22 +94,12 @@ public class StockService {
 				emitter.complete();
 				executor.shutdown();
 			}
-		}, 0, 1, TimeUnit.SECONDS);
+		}, 0, SSE_INTERVAL_MS, TimeUnit.MILLISECONDS);
 
-		emitter.onCompletion(() -> {
-			executor.shutdown();
-			int remaining = rtStockPriceStore.removeSubscriber(stockCode);
-			if (remaining <= 0) {
-				kisWebSocketClient.unsubscribe(stockCode);  // 마지막 구독자일 때만 취소
-			}
-		});
+		emitter.onCompletion(() -> executor.shutdown());
 
 		emitter.onTimeout(() -> {
 			executor.shutdown();
-			int remaining = rtStockPriceStore.removeSubscriber(stockCode);
-			if (remaining <= 0) {
-				kisWebSocketClient.unsubscribe(stockCode);
-			}
 			log.info("SSE 타임아웃 - 종목: {}", stockCode);
 		});
 

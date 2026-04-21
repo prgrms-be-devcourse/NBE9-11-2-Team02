@@ -1,4 +1,4 @@
-package com.back.together02be.infra.kis;
+package com.back.together02be.infra.kis.websocket;
 
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -12,6 +12,8 @@ import com.back.together02be.stock.service.RealTimeStockPriceStore;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 @Slf4j
 @Component
@@ -19,8 +21,10 @@ import lombok.extern.slf4j.Slf4j;
 public class KisWebSocketHandler {
 
 	private final RealTimeStockPriceStore rtStockPriceStore;
+	private final ObjectMapper objectMapper;
 
 	private String approvalKey;
+	private WebSocket conn;
 
 	private final Set<String> subscribedStocks = ConcurrentHashMap.newKeySet();
 
@@ -29,10 +33,17 @@ public class KisWebSocketHandler {
 	}
 
 	public void onOpen(WebSocket conn) {
-		log.info("한국투자 증권 WebSocket 연결 성공");
+		this.conn = conn;
+		log.info("한국투자 증권 WebSocket 핸들러 연결 성공");
 	}
 
-	public void subscribe(WebSocket conn, String stockCode) {
+	public void subscribe(String stockCode) {
+
+		if (!subscribedStocks.add(stockCode)) { // 중복 종목 구독 방지
+			log.info("이미 구독 중: {}", stockCode);
+			return;
+		}
+
 		String message = """
 			{
 			  "header": {
@@ -54,7 +65,7 @@ public class KisWebSocketHandler {
 		log.info("구독 시작: {}", stockCode);
 	}
 
-	public void unsubscribe(WebSocket conn, String stockCode) {
+	public void unsubscribe(String stockCode) {
 		String message = """
         {
           "header": {
@@ -78,10 +89,24 @@ public class KisWebSocketHandler {
 
 	public void onMessage(String message) {
 		if (message.startsWith("{")) {
-			log.info("제어 메시지: {}", message);
-			return;
+			try {
+				JsonNode json = objectMapper.readTree(message);
+				String trId = json.path("header").path("tr_id").asText();
+				log.info("tr_id: {}", trId);
+
+				if ("PINGPONG".equals(trId)) {
+					log.info("PINGPONG 수신 → echo 응답");
+					conn.send(message); // 받은 payload 그대로 돌려보내기
+					return;
+				}
+			} catch (Exception e) {
+				log.warn("JSON 파싱 실패: {}", message);
+			}
+
+			log.info("📋 제어 메시지: {}", message);
+		} else {
+			parse(message);
 		}
-		parse(message);
 	}
 
 	private void parse(String raw) {
@@ -102,8 +127,8 @@ public class KisWebSocketHandler {
 			.build();
 
 		rtStockPriceStore.put(stockPrice.getStockCode(), stockPrice); // ← 캐싱
-		log.info("[{}] 체결시간: {}, 현재가: {}원 | 전일 대비 부호: {} | 전일 대비 가격: {} | 전일 대비율: {}",
-			stockPrice.getStockCode(), stockPrice.getTradeTime(), stockPrice.getPrice(), stockPrice.getChangeSign(),
-			stockPrice.getChange(), stockPrice.getChangeRate());
+		// log.info("[{}] 체결시간: {}, 현재가: {}원 | 전일 대비 부호: {} | 전일 대비 가격: {} | 전일 대비율: {}",
+		// 	stockPrice.getStockCode(), stockPrice.getTradeTime(), stockPrice.getPrice(), stockPrice.getChangeSign(),
+		// 	stockPrice.getChange(), stockPrice.getChangeRate());
 	}
 }
