@@ -1,6 +1,7 @@
 package com.back.together02be.global.security;
 
-import lombok.RequiredArgsConstructor;
+import java.util.List;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -16,7 +17,7 @@ import org.springframework.security.web.header.writers.frameoptions.XFrameOption
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import java.util.List;
+import lombok.RequiredArgsConstructor;
 
 @Configuration
 @EnableWebSecurity
@@ -47,6 +48,7 @@ public class SecurityConfig {
                         "/api/users/token"
                     )
                     .permitAll()
+                    .requestMatchers(HttpMethod.GET, "/api/stocks", "/api/stocks/**").permitAll()
                     .requestMatchers(HttpMethod.POST, "/api/users/logout").authenticated()
                     .anyRequest().authenticated()
             )

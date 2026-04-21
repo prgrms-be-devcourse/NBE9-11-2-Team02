@@ -1,5 +1,13 @@
 package com.back.together02be.global.initData;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.ApplicationRunner;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.back.together02be.asset.entity.UserAccount;
 import com.back.together02be.asset.repository.UserAccountRepository;
 import com.back.together02be.stock.entity.Stock;
@@ -9,15 +17,9 @@ import com.back.together02be.users.dto.request.SignupReq;
 import com.back.together02be.users.entity.Users;
 import com.back.together02be.users.repository.UsersRepository;
 import com.back.together02be.users.service.UsersService;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.ApplicationRunner;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.transaction.annotation.Transactional;
 
 @Configuration
 @RequiredArgsConstructor
