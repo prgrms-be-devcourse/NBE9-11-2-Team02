@@ -1,5 +1,6 @@
 package com.back.together02be.trade.processor;
 
+import com.back.together02be.achievement.event.TradeCompletedEvent;
 import com.back.together02be.asset.entity.UserAccount;
 import com.back.together02be.asset.entity.UserStock;
 import com.back.together02be.asset.repository.UserAccountRepository;
@@ -22,6 +23,7 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,6 +42,7 @@ public class TradeBuyProcessor {
     private final TradeRepository tradeRepository;
     private final IdempotencyKeyRepository idempotencyKeyRepository;
     private final ObjectMapper objectMapper;
+    private final ApplicationEventPublisher eventPublisher; // 추가
 
     @Transactional
     public BuyRes processBuy(Long userId, String idempotencyKey, BuyReq request) {
@@ -104,6 +107,12 @@ public class TradeBuyProcessor {
         // 6. 거래 내역 저장
         Trade trade = Trade.buy(account.getUsers(), stock, request.quantity(), price);
         tradeRepository.save(trade);
+
+        eventPublisher.publishEvent(new TradeCompletedEvent(
+                userId,
+                amount,
+                account.getTotalPurchase()
+        ));
 
         BuyRes result = new BuyRes(
                 trade.getId(),
