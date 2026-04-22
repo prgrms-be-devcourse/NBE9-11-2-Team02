@@ -1,5 +1,19 @@
 package com.back.together02be.global.initData;
 
+import com.back.together02be.asset.entity.UserAccount;
+import com.back.together02be.asset.entity.UserStock;
+import com.back.together02be.asset.repository.UserAccountRepository;
+import com.back.together02be.asset.repository.UserStockRepository;
+import com.back.together02be.stock.entity.Stock;
+import com.back.together02be.stock.entity.StockMarket;
+import com.back.together02be.stock.repository.StockRepository;
+import com.back.together02be.stock.service.StockService;
+import com.back.together02be.users.dto.request.SignupReq;
+import com.back.together02be.users.entity.Users;
+import com.back.together02be.users.repository.UsersRepository;
+import com.back.together02be.users.service.UsersService;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Bean;
@@ -8,18 +22,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.back.together02be.asset.entity.UserAccount;
-import com.back.together02be.asset.repository.UserAccountRepository;
-import com.back.together02be.stock.entity.Stock;
-import com.back.together02be.stock.entity.StockMarket;
-import com.back.together02be.stock.repository.StockRepository;
-import com.back.together02be.users.dto.request.SignupReq;
-import com.back.together02be.users.entity.Users;
-import com.back.together02be.users.repository.UsersRepository;
-import com.back.together02be.users.service.UsersService;
-
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.util.List;
 
 @Configuration
 @RequiredArgsConstructor
@@ -36,6 +39,8 @@ public class BaseInitData {
     private BaseInitData self;
 
     private final UsersService usersService;
+    private final UserStockRepository userStockRepository;
+    private final StockService stockService;
 
     @Bean
     public ApplicationRunner initData() {
@@ -43,6 +48,7 @@ public class BaseInitData {
             self.work1();
             self.work2();
             self.work3();
+            self.work4();
         };
     }
 
@@ -60,7 +66,7 @@ public class BaseInitData {
         }
 
         Users user = usersRepository.save(new Users("testuser", passwordEncoder.encode("password1234"), "테스트유저"));
-        
+
         userAccountRepository.save(new UserAccount(user, 0L, 50_000_000L));
     }
 
@@ -101,6 +107,19 @@ public class BaseInitData {
         stockRepository.save(new Stock("006400", "삼성SDI", StockMarket.KOSPI));
         stockRepository.save(new Stock("207940", "삼성바이오로직스", StockMarket.KOSPI));
         stockRepository.save(new Stock("373220", "LG에너지솔루션", StockMarket.KOSPI));
+    }
+
+    @Transactional
+    public void work4() {
+
+        List<Stock> stocks = stockRepository.findAll();
+
+        usersRepository.findAll().stream().forEach(user->{
+            for(int i=0;i<5;i++){
+                userStockRepository.save(new UserStock(user,stocks.get(i),33L,343423L));
+            }
+
+        });
     }
 
 }
