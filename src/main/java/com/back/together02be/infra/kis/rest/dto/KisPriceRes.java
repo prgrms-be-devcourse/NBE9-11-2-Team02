@@ -1,4 +1,4 @@
-package com.back.together02be.stock.dto.response;
+package com.back.together02be.infra.kis.rest.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -31,6 +31,10 @@ public record KisPriceRes(
             // 전일 대비 금액
             @JsonProperty("prdy_vrss")
             String priceDifference,
+
+            // 전일 대비 부호
+            @JsonProperty("prdy_vrss_sign")
+            String changeSign,
 
             // 전일 대비 등락률
             @JsonProperty("prdy_ctrt")

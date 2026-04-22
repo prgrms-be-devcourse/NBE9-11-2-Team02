@@ -1,5 +1,13 @@
 package com.back.together02be.global.initData;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.ApplicationRunner;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.back.together02be.asset.entity.UserAccount;
 import com.back.together02be.asset.repository.UserAccountRepository;
 import com.back.together02be.stock.entity.Stock;
@@ -9,15 +17,9 @@ import com.back.together02be.users.dto.request.SignupReq;
 import com.back.together02be.users.entity.Users;
 import com.back.together02be.users.repository.UsersRepository;
 import com.back.together02be.users.service.UsersService;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.ApplicationRunner;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.transaction.annotation.Transactional;
 
 @Configuration
 @RequiredArgsConstructor
@@ -46,8 +48,19 @@ public class BaseInitData {
 
     @Transactional
     public void work1() {
+
+        if (stockRepository.existsByStockCode("005930")) {
+            return;
+        }
+
         // 테스트용 시드 데이터 (H2 dev 환경 전용)
+        // 테스트 계정이 이미 있으면 다시 생성하지 않는다.
+        if (usersRepository.existsByUsername("testuser")) {
+            return;
+        }
+
         Users user = usersRepository.save(new Users("testuser", passwordEncoder.encode("password1234"), "테스트유저"));
+        
         userAccountRepository.save(new UserAccount(user, 0L, 50_000_000L));
     }
 

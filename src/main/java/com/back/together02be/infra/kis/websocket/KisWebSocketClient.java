@@ -1,14 +1,16 @@
-package com.back.together02be.infra.kis;
+package com.back.together02be.infra.kis.websocket;
 
-import com.back.together02be.infra.kis.config.KisProperties;
-import jakarta.annotation.PostConstruct;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.net.URI;
+
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
 import org.springframework.stereotype.Component;
 
-import java.net.URI;
+import com.back.together02be.infra.kis.config.KisProperties;
+
+import jakarta.annotation.PostConstruct;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Component
@@ -54,10 +56,10 @@ public class KisWebSocketClient {
 	}
 
 	public void subscribe(String stockCode) {
-		handler.subscribe(client, stockCode);
+		handler.subscribe(stockCode);
 	}
 
 	public void unsubscribe(String stockCode) {
-		handler.unsubscribe(client, stockCode);
+		handler.unsubscribe(stockCode);
 	}
 }

@@ -1,31 +1,22 @@
 package com.back.together02be.stock.service;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Service;
-import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
-
-import com.back.together02be.infra.kis.KisWebSocketClient;
-import com.back.together02be.stock.cache.StockPriceCache;
-import com.back.together02be.stock.client.KisPriceClient;
-import com.back.together02be.stock.dto.response.KisPriceRes;
 import com.back.together02be.stock.dto.RealtimeStockPrice;
 import com.back.together02be.stock.dto.response.StockListRes;
 import com.back.together02be.stock.dto.response.StockPriceRes;
 import com.back.together02be.stock.entity.Stock;
 import com.back.together02be.stock.repository.StockRepository;
-
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
@@ -33,35 +24,27 @@ import lombok.extern.slf4j.Slf4j;
 public class StockService {
 
 	private final StockRepository stockRepository;
-	private final KisPriceClient kisPriceClient;
 
-	//SSE용
-	private final RealTimeStockPriceStore rtStockPriceStore;
-	private final KisWebSocketClient kisWebSocketClient;
+	// 전체 종목/상세 종목 조회에서 공통으로 사용하는 실시간 시세 캐시 저장소
+ 	private final RealTimeStockPriceStore rtStockPriceStore;
 
-	// REST 전체 종목 조회용 캐시
-	private final Map<String, StockPriceCache> priceCache = new ConcurrentHashMap<>();
+	private static final long LIST_SSE_INTERVAL_MS = 1500; //전체 종목 시세 갱신 주기
+	private static final long SSE_INTERVAL_MS = 500; // 상세 종목 시세 갱신 주기
 
-	private int currentIndex = 0;
 
-	//캐시 읽는 메서드
-	public StockPriceCache getCachedStockPrice(String stockCode) {
-		return priceCache.get(stockCode);
-	}
-
-    //캐시 읽는 메서드
-    public List<StockListRes> getStocks() {
+	// 전체 종목 조회 시 DB의 종목 기본 정보와 실시간 시세 캐시를 조합해 응답을 생성한다.
+	public List<StockListRes> getStocks() {
         List<StockListRes> result = new ArrayList<>();
 
 		for (Stock stock : stockRepository.findAll()) {
-			StockPriceCache cached = priceCache.get(stock.getStockCode());
+			RealtimeStockPrice cached = rtStockPriceStore.get(stock.getStockCode());
 
 			Long currentPrice = null;
 			Double changeRate = null;
 
 			if (cached != null) {
-				currentPrice = cached.currentPrice();
-				changeRate = cached.changeRate();
+				currentPrice = parseLongSafely(cached.getPrice());
+				changeRate = parseDoubleSafely(cached.getChangeRate());
 			}
 
 			result.add(new StockListRes(
@@ -76,49 +59,54 @@ public class StockService {
 		return result;
 	}
 
-	//스케줄러 메서드
-	@Scheduled(fixedDelay = 1000) // 1초마다
-	public void updatePriceCache() {
-
-		List<Stock> stocks = stockRepository.findAll();
-
-		if (stocks.isEmpty())
-			return;
-
-		String token = kisPriceClient.getAccessToken();
-
-		// 한투 OpenAPI 호출 제한 때문에 전체 종목을 한 번에 갱신하지 않고 순차 갱신
-		int index = currentIndex % stocks.size();
-		Stock stock = stocks.get(index);
-
+	// 문자열 가격 값을 Long으로 안전하게 변환하고, 값이 없거나 형식이 잘못되면 null을 반환한다.
+	private Long parseLongSafely(String value) {
 		try {
-			KisPriceRes price = kisPriceClient.getCurrentPrice(token, stock.getStockCode());
-
-			Long currentPrice = Long.parseLong(price.output().currentPrice());
-			Double changeRate = Double.parseDouble(price.output().changeRate());
-
-			priceCache.put(stock.getStockCode(),
-				new StockPriceCache(currentPrice, changeRate));
-
-		} catch (Exception e) {
-			System.out.println("가격 갱신 실패: " + stock.getStockCode() + " / " + e.getMessage());
+			return value == null || value.isBlank() ? null : Long.parseLong(value);
+		} catch (NumberFormatException e) {
+			return null;
 		}
-
-		// 다음 위치로 이동
-		currentIndex = (currentIndex + 1) % stocks.size();
 	}
 
+	// 문자열 등락률 값을 Double로 안전하게 변환하고, 값이 없거나 형식이 잘못되면 null을 반환한다.
+	private Double parseDoubleSafely(String value) {
+		try {
+			return value == null || value.isBlank() ? null : Double.parseDouble(value);
+		} catch (NumberFormatException e) {
+			return null;
+		}
+	}
+
+	//전체 종목 실시간 정보를 1.5초 주기로 SSE 전송
+	public SseEmitter createStockListSseEmitter() {
+		SseEmitter emitter = new SseEmitter(Long.MAX_VALUE);
+
+		ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+		executor.scheduleAtFixedRate(() -> {
+			try {
+				emitter.send(getStocks());
+			} catch (IOException e) {
+				emitter.complete();
+				executor.shutdown();
+			} catch (Exception e) {
+				log.error("전체 종목 SSE 오류: {}", e.getMessage(), e);
+				emitter.complete();
+				executor.shutdown();
+			}
+		}, 0, LIST_SSE_INTERVAL_MS, TimeUnit.MILLISECONDS);
+
+		emitter.onCompletion(executor::shutdown);
+		emitter.onTimeout(() -> {
+			executor.shutdown();
+			log.info("전체 종목 SSE 타임아웃");
+		});
+
+		return emitter;
+	}
 
 	public SseEmitter createSseEmitter(String stockCode) {
 
 		findStock(stockCode);
-
-		int count = rtStockPriceStore.addSubscriber(stockCode); // 구독자 추가
-
-		// 종목의 첫 구독자일 때만 구독 요청
-		if (count == 1) {
-			kisWebSocketClient.subscribe(stockCode);
-		}
 
 		SseEmitter emitter = new SseEmitter(Long.MAX_VALUE);
 
@@ -138,22 +126,12 @@ public class StockService {
 				emitter.complete();
 				executor.shutdown();
 			}
-		}, 0, 1, TimeUnit.SECONDS);
+		}, 0, SSE_INTERVAL_MS, TimeUnit.MILLISECONDS);
 
-		emitter.onCompletion(() -> {
-			executor.shutdown();
-			int remaining = rtStockPriceStore.removeSubscriber(stockCode);
-			if (remaining <= 0) {
-				kisWebSocketClient.unsubscribe(stockCode);  // 마지막 구독자일 때만 취소
-			}
-		});
+		emitter.onCompletion(() -> executor.shutdown());
 
 		emitter.onTimeout(() -> {
 			executor.shutdown();
-			int remaining = rtStockPriceStore.removeSubscriber(stockCode);
-			if (remaining <= 0) {
-				kisWebSocketClient.unsubscribe(stockCode);
-			}
 			log.info("SSE 타임아웃 - 종목: {}", stockCode);
 		});
 
