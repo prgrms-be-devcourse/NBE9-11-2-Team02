@@ -3,7 +3,7 @@ package com.back.together02be.infra.kis;
 import com.back.together02be.infra.kis.rest.KisPriceClient;
 import com.back.together02be.infra.kis.websocket.KisWebSocketClient;
 import com.back.together02be.stock.dto.RealtimeStockPrice;
-import com.back.together02be.stock.dto.response.KisPriceRes;
+import com.back.together02be.infra.kis.rest.dto.KisPriceRes;
 import com.back.together02be.stock.entity.Stock;
 import com.back.together02be.stock.repository.StockRepository;
 import com.back.together02be.stock.service.RealTimeStockPriceStore;

@@ -3,7 +3,7 @@ package com.back.together02be.infra.kis.rest;
 import com.back.together02be.chart.constant.ChartPeriod;
 import com.back.together02be.chart.dto.response.KisChartApiRes;
 import com.back.together02be.infra.kis.rest.service.KisTokenService;
-import com.back.together02be.stock.dto.response.KisPriceRes;
+import com.back.together02be.infra.kis.rest.dto.KisPriceRes;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Component;
