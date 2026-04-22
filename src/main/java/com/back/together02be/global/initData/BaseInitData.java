@@ -1,7 +1,8 @@
 package com.back.together02be.global.initData;
 
+import com.back.together02be.achievement.entity.Achievement;
+import com.back.together02be.achievement.repository.AchievementRepository;
 import com.back.together02be.asset.entity.UserAccount;
-import com.back.together02be.asset.entity.UserStock;
 import com.back.together02be.asset.repository.UserAccountRepository;
 import com.back.together02be.asset.repository.UserStockRepository;
 import com.back.together02be.stock.entity.Stock;
@@ -22,8 +23,6 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-
 @Configuration
 @RequiredArgsConstructor
 @Slf4j
@@ -41,6 +40,7 @@ public class BaseInitData {
     private final UsersService usersService;
     private final UserStockRepository userStockRepository;
     private final StockService stockService;
+    private final AchievementRepository achievementRepository;
 
     @Bean
     public ApplicationRunner initData() {
@@ -48,7 +48,7 @@ public class BaseInitData {
             self.work1();
             self.work2();
             self.work3();
-//            self.work4();
+            self.work4();
         };
     }
 
@@ -111,15 +111,28 @@ public class BaseInitData {
 
     @Transactional
     public void work4() {
+        if (achievementRepository.count() > 0) {
+            return;
+        }
 
-        List<Stock> stocks = stockRepository.findAll();
+        log.info("업적(Achievement) 초기 데이터 세팅을 시작합니다.");
 
-        usersRepository.findAll().stream().forEach(user->{
-            for(int i=0;i<5;i++){
-                userStockRepository.save(new UserStock(user,stocks.get(i),33L,343423L));
-            }
+        // 4. 기본 업적 데이터 저장 (이전 단계에서 Achievement 엔티티에 @Builder를 추가했다고 가정)
+        achievementRepository.save(Achievement.builder()
+                .code("FIRST_TRADE")
+                .name("첫 주주 등극")
+                .description("생애 첫 주식 매수 성공")
+                .reward("1,000 포인트")
+                .build());
 
-        });
+        achievementRepository.save(Achievement.builder()
+                .code("BIG_SPENDER")
+                .name("모의투자 큰 손")
+                .description("누적 매수 금액 1,000만원 돌파")
+                .reward("10,000 포인트")
+                .build());
+
+        log.info("업적 초기 데이터 세팅 완료.");
     }
 
 }

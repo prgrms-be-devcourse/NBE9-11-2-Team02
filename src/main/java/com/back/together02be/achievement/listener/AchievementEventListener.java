@@ -48,9 +48,16 @@ public class AchievementEventListener {
             // 2. 달성하지 않았다면 객체의 로직(if문) 평가
             if (rule.isSatisfied(event)) {
 
-                // 3. 조건 만족 시 DB에서 메타데이터를 가져와 매핑 테이블에 저장
+                // 업적이 없으면 새로 생성하여 저장 (Get or Create 패턴)
                 Achievement achievementMeta = achievementRepository.findByCode(targetCode)
-                        .orElseThrow(() -> new IllegalStateException("DB에 정의되지 않은 업적 코드: " + targetCode));
+                        .orElseGet(() -> achievementRepository.save(
+                                Achievement.builder()
+                                        .code(targetCode)
+                                        .name(rule.getDefaultName()) // 인터페이스에서 가져옴
+                                        .description(rule.getDefaultDescription())
+                                        .reward("기본 보상") // 또는 기본값 설정
+                                        .build()
+                        ));
 
                 Users user = usersRepository.getReferenceById(event.userId());
 
