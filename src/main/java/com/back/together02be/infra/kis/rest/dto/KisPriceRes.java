@@ -1,4 +1,4 @@
-package com.back.together02be.stock.dto.response;
+package com.back.together02be.infra.kis.rest.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

@@ -13,7 +13,7 @@ import com.back.together02be.chart.constant.ChartPeriod;
 import com.back.together02be.chart.dto.Candle;
 import com.back.together02be.chart.dto.response.ChartRes;
 import com.back.together02be.chart.dto.response.KisChartApiRes;
-import com.back.together02be.stock.client.KisPriceClient;
+import com.back.together02be.infra.kis.rest.KisPriceClient;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;

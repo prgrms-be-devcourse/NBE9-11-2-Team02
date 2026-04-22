@@ -1,6 +1,6 @@
 package com.back.together02be.stock.dto;
 
-import com.back.together02be.stock.dto.response.KisPriceRes;
+import com.back.together02be.infra.kis.rest.dto.KisPriceRes;
 
 import lombok.Builder;
 import lombok.Getter;
