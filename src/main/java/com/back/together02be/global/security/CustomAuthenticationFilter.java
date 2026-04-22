@@ -33,17 +33,23 @@ public class CustomAuthenticationFilter extends OncePerRequestFilter {
             FilterChain filterChain
     ) throws ServletException, IOException {
 
-        // 헤더에서 토큰 꺼냄
-        String authHeader = request.getHeader("Authorization");
+        String token = null;
 
-        // 토큰 없으면 그냥 통과
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+        // 1. 헤더에서 토큰 추출 시도
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            token = authHeader.substring(7); // "Bearer " 이후의 순수 토큰만 추출
+        }
+        // 2. 헤더에 없다면 URL 파라미터에서 추출 시도
+        else {
+            token = request.getParameter("token"); // 파라미터는 "Bearer "가 없으므로 그대로 사용
+        }
+
+        // 3. 둘 다 없으면 검증 없이 통과 (SecurityConfig의 인가 설정에 맡김)
+        if (token == null || token.isBlank()) {
             filterChain.doFilter(request, response);
             return;
         }
-
-        // "Bearer eyJhbGciOiJIUzI1NiJ9..." -> 7부터 토큰
-        String token = authHeader.substring(7);
 
         Map<String, Object> payload = JwtUtil.payloadOrNull(token, jwtSecret);
 
