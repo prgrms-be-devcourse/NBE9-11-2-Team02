@@ -1,4 +1,4 @@
-package com.back.together02be.global.util;
+package com.back.together02be.trade.util;
 
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;

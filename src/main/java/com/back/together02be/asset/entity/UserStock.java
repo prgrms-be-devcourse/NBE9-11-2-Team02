@@ -54,5 +54,4 @@ public class UserStock extends BaseEntity {
 		}
 		this.quantity = newQuantity;
 	}
-
 }

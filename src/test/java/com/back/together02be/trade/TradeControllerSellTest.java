@@ -89,10 +89,10 @@ public class TradeControllerSellTest {
 
         // DB 상태 검증
         UserStock userStock = userStockRepository
-                .findByUsersIdAndStockIdWithLock(1L, 1L)
+                .findByUsersIdAndStockId(1L, 1L)
                 .orElseThrow();
         UserAccount userAccount = userAccountRepository
-                .findByUsersIdWithLock(1L)
+                .findByUsersId(1L)
                 .orElseThrow();
 
         assertThat(userStock.getQuantity()).isEqualTo(5L);              // 10 - 5
@@ -126,9 +126,9 @@ public class TradeControllerSellTest {
 
         // DB 상태 검증 - UserStock 삭제 확인
         Optional<UserStock> deleted = userStockRepository
-                .findByUsersIdAndStockIdWithLock(1L, 1L);
+                .findByUsersIdAndStockId(1L, 1L);
         UserAccount userAccount = userAccountRepository
-                .findByUsersIdWithLock(1L)
+                .findByUsersId(1L)
                 .orElseThrow();
 
         assertThat(deleted).isEmpty();                                  // 전량매도 → 삭제
@@ -165,7 +165,7 @@ public class TradeControllerSellTest {
 
         // profit = (60000 - 70000) * 1 = -10000 → Trade에 저장됐는지 확인
         UserStock userStock = userStockRepository
-                .findByUsersIdAndStockIdWithLock(1L, 1L)
+                .findByUsersIdAndStockId(1L, 1L)
                 .orElseThrow();
 
         assertThat(userStock.getQuantity()).isEqualTo(9L);              // 10 - 1
@@ -227,7 +227,7 @@ public class TradeControllerSellTest {
 
         // DB 수량 변화 없음 검증
         UserStock userStock = userStockRepository
-                .findByUsersIdAndStockIdWithLock(1L, 1L)
+                .findByUsersIdAndStockId(1L, 1L)
                 .orElseThrow();
 
         assertThat(userStock.getQuantity()).isEqualTo(10L); // 그대로
@@ -313,6 +313,6 @@ public class TradeControllerSellTest {
     // ────────────────────────────────────────────
 
     private UserAccount userAccount() {
-        return userAccountRepository.findByUsersIdWithLock(1L).orElseThrow();
+        return userAccountRepository.findByUsersId(1L).orElseThrow();
     }
 }
