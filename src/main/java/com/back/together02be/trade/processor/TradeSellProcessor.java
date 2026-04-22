@@ -4,7 +4,7 @@ import com.back.together02be.asset.entity.UserAccount;
 import com.back.together02be.asset.entity.UserStock;
 import com.back.together02be.asset.repository.UserAccountRepository;
 import com.back.together02be.asset.repository.UserStockRepository;
-import com.back.together02be.global.util.MarketTimeValidator;
+import com.back.together02be.trade.util.MarketTimeValidator;
 import com.back.together02be.stock.dto.RealtimeStockPrice;
 import com.back.together02be.stock.entity.Stock;
 import com.back.together02be.stock.repository.StockRepository;
@@ -20,6 +20,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 
 @Component
 @RequiredArgsConstructor
@@ -30,6 +35,22 @@ public class TradeSellProcessor {
     private final StockRepository stockRepository;
     private final TradeRepository tradeRepository;
     private static final BigDecimal SELL_TOLERANCE_RATE = new BigDecimal("0.98");
+
+    // 10초 이상 지연시 예외처리
+    // 비즈니스 로직을 처리하는 프로세서 내부로 이동
+    private boolean isStale(RealtimeStockPrice stockPrice, int limitSeconds) {
+        String tradeTimeStr = stockPrice.getTradeTime(); // DTO에서 값을 가져옴
+        if (tradeTimeStr == null) return true;
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HHmmss");
+        LocalTime tradeTime = LocalTime.parse(tradeTimeStr, formatter);
+
+        // 현재 날짜와 매칭
+        LocalDateTime tradeDateTime = LocalDateTime.of(LocalDate.now(), tradeTime);
+        LocalDateTime now = LocalDateTime.now();
+
+        return ChronoUnit.SECONDS.between(tradeDateTime, now) > limitSeconds;
+    }
 
     @Transactional
     public TradeSellRes processSell(Long userId, TradeSellReq request) {
@@ -51,7 +72,7 @@ public class TradeSellProcessor {
         if (stockPrice == null) {
             throw new EntityNotFoundException("현재가 정보를 불러올 수 없습니다. 잠시 후 다시 시도해주세요.");
         }
-        if (stockPrice.isStale(10)) { // 10초 기준
+        if (isStale(stockPrice, 10)) {
             throw new IllegalStateException("시세 정보가 10초 이상 지연되었습니다. 거래가 불가능합니다.");
         }
         Long price = Long.parseLong(stockPrice.getPrice());

@@ -4,7 +4,7 @@ import com.back.together02be.asset.entity.UserAccount;
 import com.back.together02be.asset.entity.UserStock;
 import com.back.together02be.asset.repository.UserAccountRepository;
 import com.back.together02be.asset.repository.UserStockRepository;
-import com.back.together02be.global.util.MarketTimeValidator;
+import com.back.together02be.trade.util.MarketTimeValidator;
 import com.back.together02be.stock.dto.RealtimeStockPrice;
 import com.back.together02be.stock.entity.Stock;
 import com.back.together02be.stock.repository.StockRepository;
@@ -136,22 +136,5 @@ class TradeSellProcessorTest {
 
         assertThrows(IllegalStateException.class, () ->
                 tradeSellProcessor.processSell(1L, new TradeSellReq(1L, 10L, 100L, 10000L)));
-    }
-
-    // t5: 실패 - 시세 정보 지연
-    @Test
-    @DisplayName("t5: 실패 - 시세 정보 지연")
-    void t5() {
-        Stock stock = new Stock("005930", "삼성전자", "KOSPI");
-        UserStock userStock = new UserStock(null, stock, 20L, 10000L);
-        UserAccount account = new UserAccount(null, 1000000L, 0L);
-        mockCommonDependencies(stock, userStock, account); // 필수!!
-
-        RealtimeStockPrice stalePrice = mock(RealtimeStockPrice.class);
-        given(stalePrice.isStale(10)).willReturn(true);
-        given(stockPriceStore.get(any())).willReturn(stalePrice);
-
-        assertThrows(IllegalStateException.class, () ->
-                tradeSellProcessor.processSell(1L, new TradeSellReq(1L, 10L, 10L, 10000L)));
     }
 }

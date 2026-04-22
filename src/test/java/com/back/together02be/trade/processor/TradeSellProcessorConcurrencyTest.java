@@ -1,7 +1,7 @@
 package com.back.together02be.trade.processor;
 
 import com.back.together02be.asset.repository.UserStockRepository;
-import com.back.together02be.global.util.MarketTimeValidator;
+import com.back.together02be.trade.util.MarketTimeValidator;
 import com.back.together02be.trade.dto.request.TradeSellReq;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
