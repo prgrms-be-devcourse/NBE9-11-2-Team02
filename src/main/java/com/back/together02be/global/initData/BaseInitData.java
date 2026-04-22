@@ -1,5 +1,17 @@
 package com.back.together02be.global.initData;
 
+import com.back.together02be.asset.entity.UserAccount;
+import com.back.together02be.asset.repository.UserAccountRepository;
+import com.back.together02be.ranking.service.RankingSeasonService;
+import com.back.together02be.stock.entity.Stock;
+import com.back.together02be.stock.entity.StockMarket;
+import com.back.together02be.stock.repository.StockRepository;
+import com.back.together02be.users.dto.request.SignupReq;
+import com.back.together02be.users.entity.Users;
+import com.back.together02be.users.repository.UsersRepository;
+import com.back.together02be.users.service.UsersService;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Bean;
@@ -8,18 +20,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.back.together02be.asset.entity.UserAccount;
-import com.back.together02be.asset.repository.UserAccountRepository;
-import com.back.together02be.stock.entity.Stock;
-import com.back.together02be.stock.entity.StockMarket;
-import com.back.together02be.stock.repository.StockRepository;
-import com.back.together02be.users.dto.request.SignupReq;
-import com.back.together02be.users.entity.Users;
-import com.back.together02be.users.repository.UsersRepository;
-import com.back.together02be.users.service.UsersService;
-
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.time.LocalDate;
 
 @Configuration
 @RequiredArgsConstructor
@@ -37,12 +38,15 @@ public class BaseInitData {
 
     private final UsersService usersService;
 
+    private final RankingSeasonService rankingSeasonService;
+
     @Bean
     public ApplicationRunner initData() {
         return args -> {
             self.work1();
             self.work2();
             self.work3();
+            self.work4();
         };
     }
 
@@ -101,6 +105,12 @@ public class BaseInitData {
         stockRepository.save(new Stock("006400", "삼성SDI", StockMarket.KOSPI));
         stockRepository.save(new Stock("207940", "삼성바이오로직스", StockMarket.KOSPI));
         stockRepository.save(new Stock("373220", "LG에너지솔루션", StockMarket.KOSPI));
+    }
+
+    @Transactional
+    public void work4() {
+        LocalDate today = LocalDate.now();
+        rankingSeasonService.startSeason(today);
     }
 
 }

@@ -16,7 +16,8 @@ public class RankingDailyScheduler {
     private final RankingSnapshotService rankingSnapshotService;
 
     // 매일 00시에 DAILY 랭킹을 생성한다.
-    @Scheduled(cron = "0 0 0 * * *")
+//    @Scheduled(cron = "0 0 0 * * *")
+    @Scheduled(fixedRate = 60000)
     public void generateDailyRanking() {
         LocalDate today = LocalDate.now();
         rankingSnapshotService.createDailySnapshot(today);

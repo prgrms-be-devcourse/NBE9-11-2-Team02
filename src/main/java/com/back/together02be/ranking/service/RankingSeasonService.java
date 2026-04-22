@@ -4,6 +4,7 @@ import com.back.together02be.asset.entity.UserAccount;
 import com.back.together02be.asset.repository.UserAccountRepository;
 import com.back.together02be.ranking.entity.RankingSeason;
 import com.back.together02be.ranking.repository.RankingSeasonRepository;
+import com.back.together02be.users.entity.Users;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,6 +26,12 @@ public class RankingSeasonService {
         List<UserAccount> accounts = userAccountRepository.findAll();
 
         for (UserAccount account : accounts) {
+            Long userId = account.getUsers().getId();
+
+            if (rankingSeasonRepository.findByUserIdAndActiveTrue(userId).isPresent()) {
+                continue;
+            }
+
             long totalAsset = rankingAssetCalculator.calculateTotalAsset(account);
             RankingSeason season = new RankingSeason(account.getUsers(), totalAsset, startDate);
             rankingSeasonRepository.save(season);
@@ -53,5 +60,21 @@ public class RankingSeasonService {
     public RankingSeason getActiveSeason(Long userId) {
         return rankingSeasonRepository.findByUserIdAndActiveTrue(userId)
                 .orElseThrow(() -> new IllegalStateException("활성 시즌 정보가 없습니다. userId=" + userId));
+    }
+
+    @Transactional
+    public void createSeasonForUser(Users user, LocalDate startDate) {
+        boolean exists = rankingSeasonRepository.findByUserIdAndActiveTrue(user.getId()).isPresent();
+
+        if (exists) {
+            return;
+        }
+
+        UserAccount account = userAccountRepository.findByUsersId(user.getId())
+                .orElseThrow(() -> new IllegalStateException("계좌 정보가 없습니다. userId=" + user.getId()));
+
+        long totalAsset = rankingAssetCalculator.calculateTotalAsset(account);
+        RankingSeason season = new RankingSeason(user, totalAsset, startDate);
+        rankingSeasonRepository.save(season);
     }
 }
