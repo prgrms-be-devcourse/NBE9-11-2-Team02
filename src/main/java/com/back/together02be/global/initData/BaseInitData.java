@@ -48,8 +48,15 @@ public class BaseInitData {
 
     @Transactional
     public void work1() {
-        // 테스트용 시드 데이터 (H2 dev 환경 전용)
-        Users user = usersRepository.save(new Users("testuser", passwordEncoder.encode("password1234"), "테스트유저"));
+        // 테스트 계정이 이미 있으면 다시 생성하지 않는다.
+        if (usersRepository.existsByUsername("testuser")) {
+            return;
+        }
+
+        Users user = usersRepository.save(
+                new Users("testuser", passwordEncoder.encode("password1234"), "테스트유저")
+        );
+
         userAccountRepository.save(new UserAccount(user, 0L, 50_000_000L));
     }
 
