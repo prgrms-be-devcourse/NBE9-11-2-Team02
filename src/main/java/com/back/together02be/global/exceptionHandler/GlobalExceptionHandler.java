@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import com.back.together02be.global.apiRes.ApiRes;
+import com.back.together02be.global.exception.DuplicateRequestException;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.ConstraintViolationException;
@@ -40,6 +41,12 @@ public class GlobalExceptionHandler {
 	@ExceptionHandler(EntityNotFoundException.class)
 	public ResponseEntity<ApiRes<Void>> handleEntityNotFound(EntityNotFoundException e) {
 		return ResponseEntity.status(HttpStatus.NOT_FOUND)
+			.body(new ApiRes<>(e.getMessage(), null));
+	}
+
+	@ExceptionHandler(DuplicateRequestException.class)
+	public ResponseEntity<ApiRes<Void>> handleDuplicateRequest(DuplicateRequestException e) {
+		return ResponseEntity.status(HttpStatus.CONFLICT)
 			.body(new ApiRes<>(e.getMessage(), null));
 	}
 

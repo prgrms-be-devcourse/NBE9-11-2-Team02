@@ -1,6 +1,5 @@
 package com.back.together02be.stock.service;
 
-import com.back.together02be.stock.cache.StockPriceCache;
 import com.back.together02be.stock.dto.RealtimeStockPrice;
 import com.back.together02be.stock.dto.response.StockListRes;
 import com.back.together02be.stock.dto.response.StockPriceRes;
@@ -15,8 +14,6 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -29,7 +26,7 @@ public class StockService {
 	private final StockRepository stockRepository;
 
 	// 전체 종목/상세 종목 조회에서 공통으로 사용하는 실시간 시세 캐시 저장소
- private final RealTimeStockPriceStore rtStockPriceStore;
+ 	private final RealTimeStockPriceStore rtStockPriceStore;
 
 	private static final long LIST_SSE_INTERVAL_MS = 1500; //전체 종목 시세 갱신 주기
 	private static final long SSE_INTERVAL_MS = 500; // 상세 종목 시세 갱신 주기
