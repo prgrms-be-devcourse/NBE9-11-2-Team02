@@ -1,15 +1,17 @@
 package com.back.together02be.ranking.service;
 
+import java.time.LocalDate;
+import java.util.List;
+
+import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Service;
+
 import com.back.together02be.ranking.dto.response.RankingRes;
 import com.back.together02be.ranking.entity.Ranking;
 import com.back.together02be.ranking.entity.RankingSnapshotType;
 import com.back.together02be.ranking.repository.RankingRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Sort;
-import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
-import java.util.List;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -24,7 +26,7 @@ public class RankingService {
         return rankingRepository.findRankings(
                         RankingSnapshotType.DAILY,
                         today,
-                        Sort.by(Sort.Direction.ASC, "rank")
+                        Sort.by(Sort.Direction.ASC, "rankingPosition")
                 )
                 .stream()
                 .map(this::toResponse)
@@ -36,7 +38,7 @@ public class RankingService {
         return rankingRepository.findRankings(
                         RankingSnapshotType.MONTHLY,
                         snapshotDate,
-                        Sort.by(Sort.Direction.ASC, "rank")
+                        Sort.by(Sort.Direction.ASC, "rankingPosition")
                 )
                 .stream()
                 .map(this::toResponse)
@@ -48,7 +50,7 @@ public class RankingService {
         return new RankingRes(
                 ranking.getUser().getId(),
                 ranking.getUser().getNickname(),
-                ranking.getRank(),
+                ranking.getRankingPosition(),
                 ranking.getProfitRate(),
                 ranking.getTotalAsset()
         );
