@@ -134,7 +134,7 @@ class TradeSellProcessorConcurrencyTest {
                     System.out.println("[Thread-" + threadId + "] 매도 시도 시작 (수량: " + sellQuantityPerThread + ")");
 
                     TradeSellReq request = new TradeSellReq(null, stockId, sellQuantityPerThread, STOCK_PRICE);
-                    tradeSellProcessor.processSell(userId, request);
+                    tradeSellProcessor.processSell(userId,request);
                     successCount.incrementAndGet();
 
                     UserStock current = userStockRepository

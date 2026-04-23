@@ -48,7 +48,7 @@ public class TradeService {
             throw new IllegalStateException("이미 처리된 요청입니다.");
         }
         try {
-            return tradeSellProcessor.processSell(userId, req);
+            return tradeSellProcessor.processSell(userId,req);
         } catch (Exception e) {
             idempotencyService.remove(idempotencyKey);
             throw e;

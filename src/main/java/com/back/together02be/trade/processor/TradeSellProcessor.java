@@ -64,8 +64,6 @@ public class TradeSellProcessor {
         UserStock userStock = userStockRepository.findByUsersIdAndStockId(userId,request.stockId())
                 .orElseThrow(()->new EntityNotFoundException("보유하지 않은 주식입니다."));
 
-        UserAccount account = userAccountRepository.findByUsersId(userId)
-                .orElseThrow(() -> new EntityNotFoundException("계좌 정보가 없습니다."));
 
         // 2. 현재가 조회 — KIS WebSocket 수신 후 RealTimeStockPriceStore에 저장된 실시간 가격
         RealtimeStockPrice stockPrice = stockPriceStore.get(stock.getStockCode());
@@ -93,18 +91,26 @@ public class TradeSellProcessor {
             throw new IllegalStateException("보유 수량이 부족합니다.");
         }
 
+
         // 5. 수익 / 금액 계산
         long profit = (price - userStock.getAveragePrice()) * request.quantity();
         long amount = price * request.quantity();
+        long purchaseAmount = userStock.getAveragePrice() * request.quantity();
 
         //6. 예수금 증가
-        account.addDeposit(amount);
-        account.subtractTotalPurchase(userStock.getAveragePrice()* request.quantity());
+        int accountUpdated = userAccountRepository.updateDepositAndPurchase(userId, amount, purchaseAmount);
+        if (accountUpdated == 0) {
+            throw new IllegalStateException("계좌 정보 업데이트에 실패했습니다.");
+        }
 
         //7. 수량 차감 및 전량 매도시 삭제
         if(userStock.getQuantity().equals(request.quantity())) {
             userStockRepository.deleteByUserAndStock(userId, request.stockId());
         }
+
+        // 8. 거래 내역 저장 (account는 여기서 조회)
+        UserAccount account = userAccountRepository.findByUsersId(userId)
+                .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 계좌입니다."));
 
         //8. 거래 내역 저장
         Trade trade = Trade.sell(account.getUsers(), stock, request.quantity(), price,profit);
