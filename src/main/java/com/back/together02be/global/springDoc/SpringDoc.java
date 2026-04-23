@@ -50,7 +50,7 @@ public class SpringDoc {
     public GroupedOpenApi assetApi() {
         return GroupedOpenApi.builder()
                 .group("보유 자산 조회 API")
-                .pathsToMatch("/api/asset/stocks/**")
+                .pathsToMatch("/api/asset/**")
                 .build();
     }
 }
