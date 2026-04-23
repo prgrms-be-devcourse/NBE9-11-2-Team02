@@ -13,6 +13,7 @@ import com.back.together02be.stock.dto.RealtimeStockPrice;
 import com.back.together02be.stock.entity.Stock;
 import com.back.together02be.stock.entity.StockMarket;
 import com.back.together02be.stock.repository.StockRepository;
+import com.back.together02be.achievement.listener.AchievementEventListener;
 import com.back.together02be.stock.service.RealTimeStockPriceStore;
 import com.back.together02be.trade.dto.BuyReq;
 import com.back.together02be.trade.repository.TradeRepository;
@@ -64,6 +65,9 @@ class TradeConcurrencyTest {
 
     @MockitoBean
     RealTimeStockPriceStore stockPriceStore;
+
+    @MockitoBean
+    AchievementEventListener achievementEventListener;
 
     private Users user;
     private Stock stock;
@@ -118,16 +122,27 @@ class TradeConcurrencyTest {
         AtomicInteger successCount = new AtomicInteger(0);
         AtomicInteger failCount = new AtomicInteger(0);
 
+        System.out.println("=".repeat(60));
+        System.out.printf("[비관적 락 + 원자적 잔고차감] 테스트 시작%n");
+        System.out.printf("초기 잔고: %,d원 | 요청 스레드: %d개 | 건당 매수 금액: %,d원%n",
+                deposit, threadCount, price * quantity);
+        System.out.printf("이론적 허용 건수: %d건 (잔고 초과 시 원자적으로 차단)%n", deposit / (price * quantity));
+        System.out.println("=".repeat(60));
+
         // when
         for (int i = 0; i < threadCount; i++) {
+            final int threadId = i + 1;
             executor.submit(() -> {
                 try {
                     String key = UUID.randomUUID().toString();
                     idempotencyKeyRepository.save(new IdempotencyKey(key, user.getId()));
                     startLatch.await();
+                    long start = System.currentTimeMillis();
                     tradeBuyProcessor.processBuy(user.getId(), key, new BuyReq(stock.getId(), quantity, 70_000L));
+                    System.out.printf("[스레드-%d] 매수 성공 (%dms)%n", threadId, System.currentTimeMillis() - start);
                     successCount.incrementAndGet();
                 } catch (Exception e) {
+                    System.out.printf("[스레드-%d] 차단됨 — %s%n", threadId, e.getMessage());
                     failCount.incrementAndGet();
                 } finally {
                     doneLatch.countDown();
@@ -146,8 +161,10 @@ class TradeConcurrencyTest {
         assertThat(result.getDeposit()).isEqualTo(deposit - price * quantity); // 30만원
         assertThat(result.getDeposit()).isGreaterThanOrEqualTo(0); // 음수 잔고 없음
 
-        System.out.printf("[잔고 부족 동시 요청] 성공: %d, 실패: %d, 잔고: %,d원%n",
-                successCount.get(), failCount.get(), result.getDeposit());
+        System.out.println("=".repeat(60));
+        System.out.printf("[결과] 성공: %d건 | 차단: %d건%n", successCount.get(), failCount.get());
+        System.out.printf("[결과] 최종 잔고: %,d원 (음수 잔고 없음 — 원자적 차감 정상)%n", result.getDeposit());
+        System.out.println("=".repeat(60));
     }
 
     @Test
@@ -165,18 +182,28 @@ class TradeConcurrencyTest {
         AtomicInteger successCount = new AtomicInteger(0);
         AtomicInteger failCount = new AtomicInteger(0);
 
+        System.out.println("=".repeat(60));
+        System.out.printf("[비관적 락] 잔고 충분 시 동시 매수 직렬화 테스트%n");
+        System.out.printf("초기 잔고: %,d원 | 스레드: %d개 | 건당: %,d원%n",
+                deposit, threadCount, 70_000L * quantity);
+        System.out.println("비관적 락(SELECT FOR UPDATE)으로 UserStock 업데이트 직렬화");
+        System.out.println("=".repeat(60));
+
         // when
         for (int i = 0; i < threadCount; i++) {
+            final int threadId = i + 1;
             executor.submit(() -> {
                 try {
                     String key = UUID.randomUUID().toString();
                     idempotencyKeyRepository.save(new IdempotencyKey(key, user.getId()));
                     startLatch.await();
+                    long start = System.currentTimeMillis();
                     tradeBuyProcessor.processBuy(user.getId(), key, new BuyReq(stock.getId(), quantity, 70_000L));
+                    System.out.printf("[스레드-%d] 매수 성공 (%dms)%n", threadId, System.currentTimeMillis() - start);
                     successCount.incrementAndGet();
                 } catch (Exception e) {
                     failCount.incrementAndGet();
-                    System.err.println("[실패] " + e.getMessage());
+                    System.err.printf("[스레드-%d] 실패: %s%n", threadId, e.getMessage());
                 } finally {
                     doneLatch.countDown();
                 }
@@ -198,7 +225,10 @@ class TradeConcurrencyTest {
         assertThat(userStock.getQuantity()).isEqualTo(quantity * 2); // 20주
         assertThat(result.getDeposit()).isEqualTo(deposit - 70_000L * quantity * 2); // 60만원
 
-        System.out.printf("[잔고 충분 동시 요청] 성공: %d, 수량: %d주, 잔고: %,d원%n",
-                successCount.get(), userStock.getQuantity(), result.getDeposit());
+        System.out.println("=".repeat(60));
+        System.out.printf("[결과] 성공: %d건 | 실패: %d건%n", successCount.get(), failCount.get());
+        System.out.printf("[결과] 보유 주식: %d주 (비관적 락으로 수량 유실 없음)%n", userStock.getQuantity());
+        System.out.printf("[결과] 최종 잔고: %,d원 (정확히 차감됨)%n", result.getDeposit());
+        System.out.println("=".repeat(60));
     }
 }

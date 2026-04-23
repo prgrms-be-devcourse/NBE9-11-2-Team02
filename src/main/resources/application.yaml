@@ -3,7 +3,7 @@ spring:
     name: together-02-be
 
   profiles:
-    active: prod
+    dev: prod
     include: secret, local
 
   cache:
@@ -11,12 +11,6 @@ spring:
     cache-names: chart
     caffeine:
       spec: maximumSize=60,expireAfterWrite=24h # 모의투자 종목 20개 × 기간 2개(3M, 1Y) = 최대 40개 넉넉히 60개
-
-  datasource:
-    url: jdbc:h2:mem:db_dev;MODE=MySQL
-    username: sa
-    password:
-    driver-class-name: org.h2.Driver
 
   output:
     ansi:
