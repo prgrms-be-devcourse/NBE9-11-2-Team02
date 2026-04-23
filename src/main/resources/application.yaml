@@ -3,7 +3,7 @@ spring:
     name: together-02-be
 
   profiles:
-    dev: prod
+    active: prod
     include: secret, local
 
   cache:
