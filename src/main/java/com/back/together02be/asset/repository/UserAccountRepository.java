@@ -28,4 +28,11 @@ public interface UserAccountRepository extends JpaRepository<UserAccount, Long> 
 	@Query("UPDATE UserAccount u SET u.deposit = u.deposit - :amount, u.totalPurchase = u.totalPurchase + :amount " +
 		"WHERE u.users.id = :userId AND u.deposit >= :amount")
 	int decreaseDepositIfSufficient(@Param("userId") Long userId, @Param("amount") Long amount);
+
+    @Modifying
+    @Query("UPDATE UserAccount u SET u.deposit = u.deposit + :amount, u.totalPurchase = u.totalPurchase - :purchaseAmount " +
+            "WHERE u.users.id = :userId")
+    int updateDepositAndPurchase(@Param("userId") Long userId,
+                                 @Param("amount") Long amount,
+                                 @Param("purchaseAmount") Long purchaseAmount);
 }
