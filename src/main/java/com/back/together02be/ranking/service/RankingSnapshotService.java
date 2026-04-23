@@ -57,8 +57,8 @@ public class RankingSnapshotService {
                 .stream()
                 .map(this::toCandidate)
                 .sorted(
-                        Comparator.comparing(RankingCandidate::profitRate).reversed()
-                                .thenComparing(RankingCandidate::totalAsset).reversed()
+                        Comparator.comparing(RankingCandidate::profitRate, Comparator.reverseOrder())
+                                .thenComparing(RankingCandidate::totalAsset, Comparator.reverseOrder())
                                 .thenComparing(candidate -> candidate.user().getId())
                 )
                 .limit(5)
