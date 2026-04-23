@@ -2,6 +2,7 @@ package com.back.together02be.asset.service;
 
 import com.back.together02be.asset.dto.response.StockInfoRes;
 import com.back.together02be.asset.dto.response.UserStockRes;
+import com.back.together02be.asset.entity.UserAccount;
 import com.back.together02be.asset.entity.UserStock;
 import com.back.together02be.asset.repository.UserAccountRepository;
 import com.back.together02be.asset.repository.UserStockRepository;
@@ -25,6 +26,13 @@ public class AssetService {
     private final UserStockRepository userStockRepository;
     private final RealTimeStockPriceStore realTimeStockPriceStore;
     private final UserStockSseService userStockSseService;
+
+    //예수금 조회 메서드
+    public long getDeposit(Long userId){
+        UserAccount userAccount = userAccountRepository.findByUsersId(userId)
+                .orElseThrow(() -> new IllegalArgumentException("계좌 없음"));
+        return userAccount.getDeposit();
+    }
 
     // 보유 종목 조회 메서드
     public List<UserStockRes> getUserStocks(Long userId) {

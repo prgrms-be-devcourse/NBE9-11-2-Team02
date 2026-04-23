@@ -45,15 +45,17 @@ public class AssetController {
     }
 
     @GetMapping("/accounts")
-    @Operation(summary = "총 매수금 조회")
+    @Operation(summary = "총 매수금, 예수금, 닉네임 조회")
     public ApiRes<TotalPurchaseRes> totalPrice(@AuthenticationPrincipal SecurityUser user){
         long userId = user.getId();
+        String nickname = user.getNickname();
         long totalPurchase = assetService.getTotalAmountByUserId(userId);
         List<StockInfoRes> stockInfos = assetService.getStockInfo(userId);
+        long deposit = assetService.getDeposit(userId);
 
         return new ApiRes<>(
                 "조회가 완료되었습니다.",
-                new TotalPurchaseRes(totalPurchase,stockInfos)
+                new TotalPurchaseRes(nickname,deposit,totalPurchase,stockInfos)
         );
     }
 }
