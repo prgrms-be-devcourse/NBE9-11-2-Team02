@@ -50,3 +50,7 @@ application-local.yaml
 # Secret
 application-secret.yaml
 application-secret.yml
+
+# Mysql
+.env
+.env.*

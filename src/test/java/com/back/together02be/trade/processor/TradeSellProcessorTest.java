@@ -4,6 +4,7 @@ import com.back.together02be.asset.entity.UserAccount;
 import com.back.together02be.asset.entity.UserStock;
 import com.back.together02be.asset.repository.UserAccountRepository;
 import com.back.together02be.asset.repository.UserStockRepository;
+import com.back.together02be.stock.entity.StockMarket;
 import com.back.together02be.trade.util.MarketTimeValidator;
 import com.back.together02be.stock.dto.RealtimeStockPrice;
 import com.back.together02be.stock.entity.Stock;
@@ -67,7 +68,7 @@ class TradeSellProcessorTest {
     @Test
     @DisplayName("t1: 부분 매도 성공")
     void t1() {
-        Stock stock = new Stock("005930", "삼성전자", "KOSPI");
+        Stock stock = new Stock("005930", "삼성전자", StockMarket.KOSPI);
         UserStock userStock = new UserStock(null, stock, 20L, 10000L);
         UserAccount account = new UserAccount(null, 1000000L, 0L);
         mockCommonDependencies(stock, userStock, account);
@@ -87,7 +88,7 @@ class TradeSellProcessorTest {
     @Test
     @DisplayName("t2: 전량 매도 성공")
     void t2() {
-        Stock stock = new Stock("005930", "삼성전자", "KOSPI");
+        Stock stock = new Stock("005930", "삼성전자", StockMarket.KOSPI);
         UserStock userStock = new UserStock(null, stock, 20L, 10000L);
         UserAccount account = new UserAccount(null, 1000000L, 0L);
         mockCommonDependencies(stock, userStock, account);
@@ -106,7 +107,7 @@ class TradeSellProcessorTest {
     @Test
     @DisplayName("t3: 실패 - 가격 변동폭 초과")
     void t3() {
-        Stock stock = new Stock("005930", "삼성전자", "KOSPI");
+        Stock stock = new Stock("005930", "삼성전자", StockMarket.KOSPI);
         UserStock userStock = new UserStock(null, stock, 20L, 10000L);
         UserAccount account = new UserAccount(null, 1000000L, 0L);
         mockCommonDependencies(stock, userStock, account); // 필수!!
@@ -123,7 +124,7 @@ class TradeSellProcessorTest {
     @Test
     @DisplayName("t4: 실패 - 보유 수량 부족")
     void t4() {
-        Stock stock = new Stock("005930", "삼성전자", "KOSPI");
+        Stock stock = new Stock("005930", "삼성전자", StockMarket.KOSPI);
         UserStock userStock = new UserStock(null, stock, 20L, 10000L);
         UserAccount account = new UserAccount(null, 1000000L, 0L);
         mockCommonDependencies(stock, userStock, account); // 필수!!

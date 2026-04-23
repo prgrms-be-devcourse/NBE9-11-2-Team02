@@ -1,5 +1,20 @@
 package com.back.together02be.global.initData;
 
+import com.back.together02be.achievement.entity.Achievement;
+import com.back.together02be.achievement.repository.AchievementRepository;
+import com.back.together02be.asset.entity.UserAccount;
+import com.back.together02be.asset.repository.UserAccountRepository;
+import com.back.together02be.asset.repository.UserStockRepository;
+import com.back.together02be.stock.entity.Stock;
+import com.back.together02be.stock.entity.StockMarket;
+import com.back.together02be.stock.repository.StockRepository;
+import com.back.together02be.stock.service.StockService;
+import com.back.together02be.users.dto.request.SignupReq;
+import com.back.together02be.users.entity.Users;
+import com.back.together02be.users.repository.UsersRepository;
+import com.back.together02be.users.service.UsersService;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Bean;
@@ -7,19 +22,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
-
-import com.back.together02be.asset.entity.UserAccount;
-import com.back.together02be.asset.repository.UserAccountRepository;
-import com.back.together02be.stock.entity.Stock;
-import com.back.together02be.stock.entity.StockMarket;
-import com.back.together02be.stock.repository.StockRepository;
-import com.back.together02be.users.dto.request.SignupReq;
-import com.back.together02be.users.entity.Users;
-import com.back.together02be.users.repository.UsersRepository;
-import com.back.together02be.users.service.UsersService;
-
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
 @Configuration
 @RequiredArgsConstructor
@@ -36,6 +38,9 @@ public class BaseInitData {
     private BaseInitData self;
 
     private final UsersService usersService;
+    private final UserStockRepository userStockRepository;
+    private final StockService stockService;
+    private final AchievementRepository achievementRepository;
 
     @Bean
     public ApplicationRunner initData() {
@@ -43,6 +48,7 @@ public class BaseInitData {
             self.work1();
             self.work2();
             self.work3();
+            self.work4();
         };
     }
 
@@ -60,7 +66,7 @@ public class BaseInitData {
         }
 
         Users user = usersRepository.save(new Users("testuser", passwordEncoder.encode("password1234"), "테스트유저"));
-        
+
         userAccountRepository.save(new UserAccount(user, 0L, 50_000_000L));
     }
 
@@ -101,6 +107,32 @@ public class BaseInitData {
         stockRepository.save(new Stock("006400", "삼성SDI", StockMarket.KOSPI));
         stockRepository.save(new Stock("207940", "삼성바이오로직스", StockMarket.KOSPI));
         stockRepository.save(new Stock("373220", "LG에너지솔루션", StockMarket.KOSPI));
+    }
+
+    @Transactional
+    public void work4() {
+        if (achievementRepository.count() > 0) {
+            return;
+        }
+
+        log.info("업적(Achievement) 초기 데이터 세팅을 시작합니다.");
+
+        // 4. 기본 업적 데이터 저장 (이전 단계에서 Achievement 엔티티에 @Builder를 추가했다고 가정)
+        achievementRepository.save(Achievement.builder()
+                .code("FIRST_TRADE")
+                .name("첫 주주 등극")
+                .description("생애 첫 주식 매수 성공")
+                .reward("1,000 포인트")
+                .build());
+
+        achievementRepository.save(Achievement.builder()
+                .code("BIG_SPENDER")
+                .name("모의투자 큰 손")
+                .description("누적 매수 금액 1,000만원 돌파")
+                .reward("10,000 포인트")
+                .build());
+
+        log.info("업적 초기 데이터 세팅 완료.");
     }
 
 }
