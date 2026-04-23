@@ -61,7 +61,7 @@ public class TradeSellProcessor {
         Stock stock = stockRepository.findById(request.stockId())
                 .orElseThrow(() -> new EntityNotFoundException("주식 정보가 없습니다."));
 
-        UserStock userStock = userStockRepository.findByUsersIdAndStockId(request.userId(),request.stockId())
+        UserStock userStock = userStockRepository.findByUsersIdAndStockId(userId,request.stockId())
                 .orElseThrow(()->new EntityNotFoundException("보유하지 않은 주식입니다."));
 
         UserAccount account = userAccountRepository.findByUsersId(userId)
