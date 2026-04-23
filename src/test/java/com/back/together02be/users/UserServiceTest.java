@@ -2,6 +2,8 @@ package com.back.together02be.users;
 
 import com.back.together02be.asset.entity.UserAccount;
 import com.back.together02be.asset.repository.UserAccountRepository;
+import com.back.together02be.global.util.JwtUtil;
+import com.back.together02be.ranking.service.RankingSeasonService;
 import com.back.together02be.users.dto.request.LoginReq;
 import com.back.together02be.users.dto.request.SignupReq;
 import com.back.together02be.users.entity.Users;
@@ -19,6 +21,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -32,6 +35,7 @@ class UsersServiceTest {
     @Mock UsersRepository usersRepository;
     @Mock UserAccountRepository userAccountRepository;
     @Mock PasswordEncoder passwordEncoder;
+    @Mock RankingSeasonService rankingSeasonService;
 
     @InjectMocks
     UsersService usersService;
@@ -94,15 +98,20 @@ class UsersServiceTest {
     void t4() {
         LoginReq req = new LoginReq("testuser", "password1!");
         Users user = new Users("testuser", "encodedPassword", "닉네임");
+        ReflectionTestUtils.setField(user, "id", 1L);
 
         when(usersRepository.findByUsername("testuser")).thenReturn(Optional.of(user));
         when(passwordEncoder.matches("password1!", "encodedPassword")).thenReturn(true);
 
         String[] tokens = usersService.login(req);
+        Map<String, Object> payload = JwtUtil.payloadOrNull(tokens[0], "test-secret-key-must-be-32-bytes!!");
 
         assertThat(tokens).hasSize(2);
         assertThat(tokens[0]).isNotBlank();
         assertThat(tokens[1]).isNotBlank();
+        assertThat(((Number) payload.get("id")).longValue()).isEqualTo(1L);
+        assertThat(payload.get("username")).isEqualTo("testuser");
+        assertThat(payload.get("nickname")).isEqualTo("닉네임");
         assertThat(user.getRefreshToken()).isEqualTo(tokens[1]);
         assertThat(user.getRefreshTokenExpiration()).isAfter(LocalDateTime.now());
     }
@@ -161,15 +170,20 @@ class UsersServiceTest {
     @DisplayName("정상 토큰 재발급 — 새 AccessToken, RefreshToken 반환")
     void t9() {
         Users user = new Users("testuser", "encoded", "닉네임");
+        ReflectionTestUtils.setField(user, "id", 1L);
         user.updateRefreshToken("old-token", LocalDateTime.now().plusDays(7));
 
         when(usersRepository.findByRefreshToken("old-token")).thenReturn(Optional.of(user));
 
         String[] tokens = usersService.reissueToken("old-token");
+        Map<String, Object> payload = JwtUtil.payloadOrNull(tokens[0], "test-secret-key-must-be-32-bytes!!");
 
         assertThat(tokens).hasSize(2);
         assertThat(tokens[0]).isNotBlank();
         assertThat(tokens[1]).isNotBlank().isNotEqualTo("old-token");
+        assertThat(((Number) payload.get("id")).longValue()).isEqualTo(1L);
+        assertThat(payload.get("username")).isEqualTo("testuser");
+        assertThat(payload.get("nickname")).isEqualTo("닉네임");
         assertThat(user.getRefreshToken()).isEqualTo(tokens[1]);
     }
 

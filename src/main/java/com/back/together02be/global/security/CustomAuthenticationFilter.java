@@ -10,18 +10,16 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 
 @Component
 @RequiredArgsConstructor
 public class CustomAuthenticationFilter extends OncePerRequestFilter {
-
-    private final CustomUserDetailsService userDetailsService;
 
     @Value("${jwt.secret}")
     private String jwtSecret;
@@ -55,16 +53,27 @@ public class CustomAuthenticationFilter extends OncePerRequestFilter {
 
         // JWT 검증 후 유효하면 Security Context에 저장
         if (payload != null) {
+            Object idClaim = payload.get("id");
             String username = (String) payload.get("username");
-            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+            String nickname = (String) payload.get("nickname");
 
-            Authentication authentication = new UsernamePasswordAuthenticationToken(
-                    userDetails,
-                    null,
-                    userDetails.getAuthorities()
-            );
+            if (idClaim instanceof Number id && username != null && nickname != null) {
+                SecurityUser userDetails = new SecurityUser(
+                        id.longValue(),
+                        username,
+                        "",
+                        nickname,
+                        List.of()
+                );
 
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+                Authentication authentication = new UsernamePasswordAuthenticationToken(
+                        userDetails,
+                        null,
+                        userDetails.getAuthorities()
+                );
+
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+            }
         }
 
         filterChain.doFilter(request, response);
