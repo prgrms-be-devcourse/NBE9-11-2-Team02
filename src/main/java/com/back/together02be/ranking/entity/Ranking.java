@@ -1,13 +1,22 @@
 package com.back.together02be.ranking.entity;
 
-import com.back.together02be.global.entity.BaseEntity;
-import com.back.together02be.users.entity.Users;
-import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
+
+import com.back.together02be.global.entity.BaseEntity;
+import com.back.together02be.users.entity.Users;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.Index;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
@@ -26,7 +35,7 @@ public class Ranking extends BaseEntity {
 
     // 랭킹 순위.
     @Column(nullable = false)
-    private Integer rank;
+    private Integer rankingPosition;
 
     // 수익률은 소수점 계산을 위해 BigDecimal을 사용한다.
     @Column(nullable = false, precision = 10, scale = 2)
@@ -47,14 +56,14 @@ public class Ranking extends BaseEntity {
 
     public Ranking(
             Users user,
-            Integer rank,
+            Integer rankingPosition,
             BigDecimal profitRate,
             Long totalAsset,
             RankingSnapshotType snapshotType,
             LocalDate snapshotDate
     ) {
         this.user = user;
-        this.rank = rank;
+        this.rankingPosition = rankingPosition;
         this.profitRate = profitRate;
         this.totalAsset = totalAsset;
         this.snapshotType = snapshotType;
