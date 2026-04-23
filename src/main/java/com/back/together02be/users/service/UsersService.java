@@ -3,9 +3,9 @@ package com.back.together02be.users.service;
 import com.back.together02be.asset.entity.UserAccount;
 import com.back.together02be.asset.repository.UserAccountRepository;
 import com.back.together02be.global.util.JwtUtil;
+import com.back.together02be.ranking.service.RankingSeasonService;
 import com.back.together02be.users.dto.request.LoginReq;
 import com.back.together02be.users.dto.request.SignupReq;
-
 import com.back.together02be.users.entity.Users;
 import com.back.together02be.users.repository.UsersRepository;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +14,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.UUID;
@@ -25,6 +26,8 @@ public class UsersService {
     private final UsersRepository usersRepository;
     private final UserAccountRepository userAccountRepository;
     private final PasswordEncoder passwordEncoder;
+
+    private final RankingSeasonService rankingSeasonService;
 
     private static final long INITIAL_DEPOSIT = 50_000_000L;
 
@@ -57,6 +60,7 @@ public class UsersService {
 
         usersRepository.save(user);
         userAccountRepository.save(new UserAccount(user, 0L, INITIAL_DEPOSIT));
+        rankingSeasonService.createSeasonForUser(user, LocalDate.now());
     }
 
     public long count() {

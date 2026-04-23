@@ -3,12 +3,13 @@ package com.back.together02be.global.initData;
 import com.back.together02be.achievement.entity.Achievement;
 import com.back.together02be.achievement.repository.AchievementRepository;
 import com.back.together02be.asset.entity.UserAccount;
+import com.back.together02be.asset.entity.UserStock;
 import com.back.together02be.asset.repository.UserAccountRepository;
 import com.back.together02be.asset.repository.UserStockRepository;
+import com.back.together02be.ranking.service.RankingSeasonService;
 import com.back.together02be.stock.entity.Stock;
 import com.back.together02be.stock.entity.StockMarket;
 import com.back.together02be.stock.repository.StockRepository;
-import com.back.together02be.stock.service.StockService;
 import com.back.together02be.users.dto.request.SignupReq;
 import com.back.together02be.users.entity.Users;
 import com.back.together02be.users.repository.UsersRepository;
@@ -22,6 +23,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDate;
 
 @Configuration
 @RequiredArgsConstructor
@@ -39,16 +42,27 @@ public class BaseInitData {
 
     private final UsersService usersService;
     private final UserStockRepository userStockRepository;
-    private final StockService stockService;
     private final AchievementRepository achievementRepository;
+
+    private final RankingSeasonService rankingSeasonService;
+
+    private void createTestUserIfNotExists(String username, String password, String nickname) {
+        if (usersRepository.findByUsername(username).isPresent()) {
+            return;
+        }
+
+        usersService.signup(new SignupReq(username, password, password, nickname));
+    }
 
     @Bean
     public ApplicationRunner initData() {
         return args -> {
-            self.work1();
-            self.work2();
+//            self.work1();
+//            self.work2();
             self.work3();
             self.work4();
+            self.work6();
+            self.work5();
         };
     }
 
@@ -72,13 +86,17 @@ public class BaseInitData {
 
     @Transactional
     public void work2() {
-        if (usersService.count() > 0) {
-            return;
+        if (usersRepository.findByUsername("user1").isEmpty()) {
+            usersService.signup(new SignupReq("user1", "password01", "password01", "유저1"));
         }
 
-        usersService.signup(new SignupReq("user1", "password01", "password01", "유저1"));
-        usersService.signup(new SignupReq("user2", "password02", "password02", "유저2"));
-        usersService.signup(new SignupReq("user3", "password03", "password03", "유저3"));
+        if (usersRepository.findByUsername("user2").isEmpty()) {
+            usersService.signup(new SignupReq("user2", "password02", "password02", "유저2"));
+        }
+
+        if (usersRepository.findByUsername("user3").isEmpty()) {
+            usersService.signup(new SignupReq("user3", "password03", "password03", "유저3"));
+        }
     }
 
     @Transactional
@@ -133,6 +151,87 @@ public class BaseInitData {
                 .build());
 
         log.info("업적 초기 데이터 세팅 완료.");
+    }
+
+    @Transactional
+    public void work5() {
+        if (userStockRepository.count() > 0) {
+            return;
+        }
+
+        Users plus1 = usersRepository.findByUsername("plus1")
+                .orElseGet(() -> {
+                    usersService.signup(new SignupReq("plus1", "password01", "password01", "플러스1"));
+                    return usersRepository.findByUsername("plus1")
+                            .orElseThrow(() -> new IllegalStateException("plus1 생성 실패"));
+                });
+
+        Users plus2 = usersRepository.findByUsername("plus2")
+                .orElseGet(() -> {
+                    usersService.signup(new SignupReq("plus2", "password02", "password02", "플러스2"));
+                    return usersRepository.findByUsername("plus2")
+                            .orElseThrow(() -> new IllegalStateException("plus2 생성 실패"));
+                });
+
+        Users minus1 = usersRepository.findByUsername("minus1")
+                .orElseGet(() -> {
+                    usersService.signup(new SignupReq("minus1", "password04", "password04", "마이너스1"));
+                    return usersRepository.findByUsername("minus1")
+                            .orElseThrow(() -> new IllegalStateException("minus1 생성 실패"));
+                });
+
+        Users minus2 = usersRepository.findByUsername("minus2")
+                .orElseGet(() -> {
+                    usersService.signup(new SignupReq("minus2", "password05", "password05", "마이너스2"));
+                    return usersRepository.findByUsername("minus2")
+                            .orElseThrow(() -> new IllegalStateException("minus2 생성 실패"));
+                });
+
+        UserAccount plus1Account = userAccountRepository.findByUsersId(plus1.getId())
+                .orElseThrow(() -> new IllegalStateException("plus1 계좌 없음"));
+        UserAccount plus2Account = userAccountRepository.findByUsersId(plus2.getId())
+                .orElseThrow(() -> new IllegalStateException("plus2 계좌 없음"));
+        UserAccount minus1Account = userAccountRepository.findByUsersId(minus1.getId())
+                .orElseThrow(() -> new IllegalStateException("minus1 계좌 없음"));
+        UserAccount minus2Account = userAccountRepository.findByUsersId(minus2.getId())
+                .orElseThrow(() -> new IllegalStateException("minus2 계좌 없음"));
+
+
+        Stock samsung = stockRepository.findByStockCode("005930")
+                .orElseThrow(() -> new IllegalStateException("삼성전자 없음"));
+        Stock skhynix = stockRepository.findByStockCode("000660")
+                .orElseThrow(() -> new IllegalStateException("SK하이닉스 없음"));
+        Stock naver = stockRepository.findByStockCode("035420")
+                .orElseThrow(() -> new IllegalStateException("NAVER 없음"));
+        Stock kakao = stockRepository.findByStockCode("035720")
+                .orElseThrow(() -> new IllegalStateException("카카오 없음"));
+        Stock lgChem = stockRepository.findByStockCode("051910")
+                .orElseThrow(() -> new IllegalStateException("LG화학 없음"));
+
+        // 수익 유저
+        userStockRepository.save(new UserStock(plus1, samsung, 50L, 70000L));
+        plus1Account.decreaseDeposit(3_500_000L);
+        plus1Account.increaseTotalPurchase(3_500_000L);
+
+        userStockRepository.save(new UserStock(plus2, skhynix, 10L, 1_000_000L));
+        plus2Account.decreaseDeposit(10_000_000L);
+        plus2Account.increaseTotalPurchase(10_000_000L);
+
+
+        // 손실 유저
+        userStockRepository.save(new UserStock(minus1, kakao, 100L, 60000L));
+        minus1Account.decreaseDeposit(6_000_000L);
+        minus1Account.increaseTotalPurchase(6_000_000L);
+
+        userStockRepository.save(new UserStock(minus2, lgChem, 10L, 450000L));
+        minus2Account.decreaseDeposit(4_500_000L);
+        minus2Account.increaseTotalPurchase(4_500_000L);
+    }
+
+    @Transactional
+    public void work6() {
+        LocalDate today = LocalDate.now();
+        rankingSeasonService.startSeason(today);
     }
 
 }
