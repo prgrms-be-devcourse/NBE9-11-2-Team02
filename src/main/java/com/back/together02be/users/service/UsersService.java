@@ -84,7 +84,7 @@ public class UsersService {
         String accessToken = JwtUtil.generateAccessToken(
                 jwtSecret,
                 accessExpireSeconds,
-                Map.of("username", user.getUsername())
+                createAccessTokenBody(user)
         );
 
         // RefreshToken 발급
@@ -127,7 +127,7 @@ public class UsersService {
         String newAccessToken = JwtUtil.generateAccessToken(
                 jwtSecret,
                 accessExpireSeconds,
-                Map.of("username", user.getUsername())
+                createAccessTokenBody(user)
         );
 
         // RefreshToken 갱신
@@ -138,5 +138,13 @@ public class UsersService {
         );
 
         return new String[]{newAccessToken, newRefreshToken};
+    }
+
+    private Map<String, Object> createAccessTokenBody(Users user) {
+        return Map.of(
+                "id", user.getId(),
+                "username", user.getUsername(),
+                "nickname", user.getNickname()
+        );
     }
 }
