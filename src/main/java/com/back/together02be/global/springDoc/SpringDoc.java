@@ -53,4 +53,12 @@ public class SpringDoc {
                 .pathsToMatch("/api/asset/**")
                 .build();
     }
+
+    @Bean
+    public GroupedOpenApi AchievementApi() {
+        return GroupedOpenApi.builder()
+                .group("보유 업적 조회 API")
+                .pathsToMatch("/api/achievements/**")
+                .build();
+    }
 }
